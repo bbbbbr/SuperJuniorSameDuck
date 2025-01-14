@@ -12,7 +12,9 @@ Added CLI flags:
   -  If running the System ROM then also use `--force-mbc 0xE0`
 - `--workboy`: Turn on Workboy emulation and SDL keyboard support (`F12` to toggle keyboard)
 - `--force-mbc <hex mbc number>`: Explicitly specify which MBC to use, do not use header or other detection. Allows using MegaDuck ROMs built for Game Boy MBCs (such as MBC5) as well as avoiding heuristics for other ROMs. 
-  - `0xE0`:  MegaDuck Laptop System ROM MBC (32k bank size, rom bank switch reg addr `0x1000`, range 0-15)
+  - `0xE0`:  MegaDuck Laptop System ROM MBC
+    - 32k ROM bank size, reg addr `0x1000`, range 0-15
+    - 4 x 8k plug-in cart SRAM banks, shares mbc bank switch register with ROM banks (uses Upper Nibble)
   - `0xE1`:  MegaDuck MD 1 (32K banks, rom bank switch reg addr `0xB000`, range 0-1)
   - `0xE2`:  MegaDuck MD 2 (16k banks, rom bank switch reg addr `0x0001`, range 1-3 or 1-7)-  
 
