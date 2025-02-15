@@ -158,6 +158,7 @@ void GB_update_mbc_mappings(GB_gameboy_t *gb)
 
         // MegaDuck 32K bank switching
         case DUCK_SYSROM:
+            // TODO: MegaDuck: MD0: Does this need the like ~44-244 something T-State delay or whatever the system ROM and games use?            
             // GB_log(gb, " @ MBC.DUCK_SYSROM: write = 0x%02x [0: 0x%02x/ 1: 0x%02x",
             //     gb->duck_sysrom.rom_bank, gb->mbc_rom0_bank, gb->mbc_rom_bank);
             gb->mbc_rom0_bank =  gb->duck_sysrom.rom_bank * 2;
