@@ -35,6 +35,10 @@ void MD_receive_buf_handle_result(GB_megaduck_laptop_t * periph) {
         case MEGADUCK_SYS_CMD_PLAYSPEECH:
             MD_speech_playback(periph);
             break;
+
+        case MEGADUCK_SYS_CMD_PRINT_SEND_BYTES:
+            MD_printer_process_buf(periph);
+            break;
     }
 }
 

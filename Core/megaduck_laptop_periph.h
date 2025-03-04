@@ -31,3 +31,8 @@ void MD_send_buf_handle_tx_reply(GB_megaduck_laptop_t * periph);
 
 // Speech
 void MD_speech_playback(GB_megaduck_laptop_t * periph);
+
+// Printer
+uint8_t MD_printer_init(GB_megaduck_laptop_t * periph);
+void MD_printer_process_buf(GB_megaduck_laptop_t * periph);
+void MD_printer_save_image_to_png(void);

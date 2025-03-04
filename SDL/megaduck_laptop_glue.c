@@ -17,7 +17,7 @@
 #define TO_UTF8(c1,c2)    ((((uint16_t)c1 & 0x1Fu) << 6) | ((uint16_t)c2 & 0x3Fu))
 
 
-// TODO: DUCK: just split this into separate _textinput vs scandcode functions
+// TODO: DUCK: just split this into separate _textinput vs scancode functions
 void megaduck_laptop_SDLscancode_to_key(SDL_Event event, uint8_t * key, uint8_t * key_modifiers) {
 
     if (event.type == SDL_TEXTINPUT) {
@@ -238,8 +238,12 @@ void megaduck_laptop_SDLscancode_to_key(SDL_Event event, uint8_t * key, uint8_t 
 
         // Why two printscreens on the keyboard?! Right key is a scancode vs. Left key is a flag.
         // Only going to emulate one, the flag version.
-        if (event.key.keysym.scancode == SDL_SCANCODE_PRINTSCREEN)
-            *key_modifiers = MEGADUCK_KBD_FLAG_PRINTSCREEN_LEFT; // Printscreen is down
+        // Added scrolllock since sometimes OS captures and doesn't pass on Printscreen
+        //
+        // Turned off for now and instead the non-flag printscreen key is used
+        // if ((event.key.keysym.scancode == SDL_SCANCODE_PRINTSCREEN) ||
+        //     (event.key.keysym.scancode == SDL_SCANCODE_SCROLLLOCK))
+        //     *key_modifiers = MEGADUCK_KBD_FLAG_PRINTSCREEN_LEFT; // Printscreen is down
 
         // Piano keys handled as CTRL-Function keys
         // When CTRL is held, it blocks character conversion for SDL_TEXTINPUT events,
@@ -339,6 +343,9 @@ void megaduck_laptop_SDLscancode_to_key(SDL_Event event, uint8_t * key, uint8_t 
             case SDL_SCANCODE_KP_DIVIDE:    *key = MEGADUCK_KBD_CODE_DIVIDE;      return;
             case SDL_SCANCODE_UP:           *key = MEGADUCK_KBD_CODE_ARROW_UP;    return;
             case SDL_SCANCODE_KP_PLUS:      *key = MEGADUCK_KBD_CODE_PLUS;        return;
+
+            case SDL_SCANCODE_PRINTSCREEN: *key = MEGADUCK_KBD_CODE_PRINTSCREEN_RIGHT; return;
+            case SDL_SCANCODE_SCROLLLOCK:  *key = MEGADUCK_KBD_CODE_PRINTSCREEN_RIGHT; return;
 
             default: return;
         } // switch (event.key.keysym.scancode)

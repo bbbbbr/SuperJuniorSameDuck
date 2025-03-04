@@ -18,8 +18,10 @@
 #include "SDL/workboy_glue.h"
 #include "Core/workboy.h"
 
+#include "SDL/megaduck_printer_preview.h"
 #include "SDL/megaduck_laptop_glue.h"
 #include "Core/megaduck_laptop.h"
+#include "Core/megaduck_laptop_periph.h"
 
 
 #ifndef _WIN32
@@ -51,6 +53,16 @@ static uint8_t megaduck_laptop_key_modifiers = MEGADUCK_KBD_FLAGS_NONE;
 static char mbc_string[255] = "";
 
 
+// For temporary transfer of context to the printer window
+bool restore_main_window_context(void) {
+
+    if (SDL_GL_MakeCurrent(window, gl_context) != 0) {
+        printf("SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
 bool uses_gl(void)
 {
     return gl_context;
@@ -62,7 +74,7 @@ void set_filename(const char *new_filename, typeof(free) *new_free_function)
         free_function(filename);
     }
     filename = (char *) new_filename;
-    free_function = new_free_function;
+     free_function = new_free_function;
     GB_rewind_reset(&gb);
 }
 
@@ -203,7 +215,7 @@ static void open_menu(void)
     }
     size_t previous_width = GB_get_screen_width(&gb);
     run_gui(true);
-    SDL_ShowCursor(SDL_DISABLE);
+    // SDL_ShowCursor(SDL_DISABLE);
     if (audio_playing) {
         GB_audio_set_paused(false);
     }
@@ -301,6 +313,7 @@ static void handle_events(GB_gameboy_t *gb)
             }
                 
             case SDL_WINDOWEVENT: {
+                case SDL_WINDOWEVENT_CLOSE:
                 if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                     update_viewport();
                 }
@@ -311,6 +324,12 @@ static void handle_events(GB_gameboy_t *gb)
                     ) {
                     update_swap_interval();
                 }
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                    // Handle closing the printer preview window
+                    if (event.window.windowID == SDL_GetWindowID(MD_printer_preview_get_window())) {
+                        MD_printer_preview_cleanup();
+                    }
+                }
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
@@ -318,6 +337,11 @@ static void handle_events(GB_gameboy_t *gb)
                 if (GB_has_accelerometer(gb) && configuration.allow_mouse_controls) {
                     GB_set_key_state(gb, GB_KEY_A, event.type == SDL_MOUSEBUTTONDOWN);
                 }
+                // Handle click-to-save in the printer preview window
+                if (event.window.windowID == SDL_GetWindowID(MD_printer_preview_get_window())) {
+                    MD_printer_save_image_to_png();
+                }
+
                 break;
             }
                 
@@ -887,7 +911,7 @@ static void debugger_reload_callback(GB_gameboy_t *gb)
 
 static void run(void)
 {
-    SDL_ShowCursor(SDL_DISABLE);
+    // SDL_ShowCursor(SDL_DISABLE);
     GB_model_t model;
     pending_command = GB_SDL_NO_COMMAND;
 restart:
@@ -1218,6 +1242,7 @@ int main(int argc, char **argv)
     // This is, essentially, best-effort.
     // This function will not be called if the process is terminated in any way, anyhow.
     atexit(SDL_Quit);
+    atexit(MD_printer_preview_cleanup);
 
     if ((console_supported = CON_start(completer))) {
         CON_set_repeat_empty(true);

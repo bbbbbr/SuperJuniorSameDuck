@@ -26,12 +26,18 @@ void MD_periph_reset(GB_megaduck_laptop_t * periph, uint8_t target_state) {
 }
 
 
-static void idle_handle_commands(GB_megaduck_laptop_t * periph) {
+static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph) {
+
+    #ifdef DEBUG_LOG_DUCK_SERIAL_RX_IDLE_CMD
+        GB_log(gb, "\n-> [idle] rx cmd = 0x%0X\n", periph->byte_being_received);
+    #endif
 
     switch (periph->byte_being_received) {
-        case MEGADUCK_SYS_CMD_INIT_UNKNOWN_0x09:
-            periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_0x09_UNKNOWN;
-            MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_CMD_INIT_UNKNOWN_0x09);
+        case MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO:
+            periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO;
+            // TODO Bit.1 indicates printer type (1 = single pass large buffer, 0 = two pass small buffer)
+            // So maybe 0x01 = 2 pass printing, 0x03 = 1 pass printing
+            MD_send_buf_enqueue(periph, MD_printer_init(periph)); // MEGADUCK_SYS_REPLY_CMD_INIT_UNKNOWN_0x09
             MD_send_buf_finalize_and_transmit(periph);
             break;
 
@@ -50,6 +56,11 @@ static void idle_handle_commands(GB_megaduck_laptop_t * periph) {
             MD_receive_buf_init(periph);
             break;
 
+        case MEGADUCK_SYS_CMD_PRINT_SEND_BYTES:
+            periph->state = MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES;
+            MD_receive_buf_init(periph);
+            break;
+
         case MEGADUCK_SYS_CMD_PLAYSPEECH:
             periph->state = MEGADUCK_SYS_STATE_CMD_PLAYSPEECH;
             MD_receive_buf_init(periph);
@@ -65,7 +76,7 @@ static void idle_handle_commands(GB_megaduck_laptop_t * periph) {
 
 
 // From the perspective of the Peripheral hardware
-static void handle_received_byte(GB_megaduck_laptop_t * periph) {
+static void handle_received_byte(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph) {
 
     switch(periph->state) {
         case MEGADUCK_SYS_STATE_INIT_1_WAIT_RX_COUNTER:
@@ -89,12 +100,13 @@ static void handle_received_byte(GB_megaduck_laptop_t * periph) {
 
         // Once Initialized handles commands sent from the MegaDuck
         case MEGADUCK_SYS_STATE_INIT_OK_READY:
-            idle_handle_commands(periph);
+            idle_handle_commands(gb, periph);
             break;
 
         // Multi-Byte Receive *FROM* the MegaDuck
         case MEGADUCK_SYS_STATE_CMD_PLAYSPEECH:  // Fall through to shared handling
         case MEGADUCK_SYS_STATE_CMD_SET_RTC:
+        case MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES:
             // Replies handled via periph_megaduck_laptop_peripheral_update()
             MD_receive_buf(periph);
             break;
@@ -137,7 +149,7 @@ static void serial_start(GB_gameboy_t *gb, bool bit_received) {
             #endif
         #endif
 
-        handle_received_byte(periph);
+        handle_received_byte(gb, periph);
 
         #ifdef MEGADUCK_SYS_SERIAL_LOGGING_ENABLED
             #ifdef MEGADUCK_SYS_SERIAL_LOG_ALL_IN_OUT
@@ -290,13 +302,14 @@ void GB_megaduck_laptop_peripheral_update(GB_gameboy_t *gb, uint8_t cycles) {
                         periph->state = MEGADUCK_SYS_STATE_INIT_5_WAIT_TX_COUNT_ACK;
                         break;
 
-                    case MEGADUCK_SYS_STATE_REPLY_CMD_0x09_UNKNOWN:
+                    case MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO:
                         // Return to initialized ready waiting state
                         periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;
                         break;
 
                     case MEGADUCK_SYS_STATE_CMD_PLAYSPEECH: // Fall through to shared handling
                     case MEGADUCK_SYS_STATE_CMD_SET_RTC:
+                    case MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES:
                         // Multi-byte buffer receive
                         if ((periph->rx_buffer_state == MEGADUCK_RX_BUF_4_DONE) ||
                             (periph->rx_buffer_state == MEGADUCK_RX_BUF_5_FAIL)) {

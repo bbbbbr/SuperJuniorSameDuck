@@ -31,6 +31,7 @@
 // #define MEGADUCK_SYS_SERIAL_LOG_RX_BUFFER
 // #define MEGADUCK_SYS_SERIAL_LOG_TX_BUFFER
 // #define MEGADUCK_SYS_SERIAL_LOG_TX_BYTES
+// #define DEBUG_LOG_DUCK_SERIAL_RX_IDLE_CMD
 
 // #define MEGADUCK_SYS_KEYBOARD_LOG_SEND_NON_NULL
 // #define MEGADUCK_SYS_FORCE_LOCAL_DATE_TIME_REPLY
@@ -43,6 +44,7 @@
 // #define DEBUG_LOG_DUCK_UNHANDLED_0x7FFF_POSSIBLE_BANK_WRITES
 // #define DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
 // #define DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
+
 
 #define MEGADUCK_BUF_SZ  256
 
@@ -107,7 +109,7 @@ enum {
     // Post-init default state
     MEGADUCK_SYS_STATE_INIT_OK_READY,
     // Command reply states
-    MEGADUCK_SYS_STATE_REPLY_CMD_0x09_UNKNOWN,
+    MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO,
     // Multi-byte receive states
     MEGADUCK_SYS_STATE_CMD_SET_RTC,                   // External Clock (partial)
     MEGADUCK_SYS_STATE_GET_RTC_TX,                    // External Clock
@@ -116,7 +118,10 @@ enum {
     MEGADUCK_SYS_STATE_GET_KEYS_TX,                   // External Clock
     MEGADUCK_SYS_STATE_GET_KEYS_WAIT_ACK,
 
-    MEGADUCK_SYS_STATE_CMD_PLAYSPEECH,               // External Clock (partial)
+    MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES,         // External Clock (partial)
+
+    MEGADUCK_SYS_STATE_CMD_PLAYSPEECH,                // External Clock (partial)
+
 
     MEGADUCK_SYS_POWER_ON_RESET  = MEGADUCK_SYS_STATE_INIT_1_WAIT_RX_COUNTER,
     MEGADUCK_SYS_KEEP_INIT_RESET = MEGADUCK_SYS_STATE_INIT_OK_READY,
@@ -141,7 +146,7 @@ enum {
     MEGADUCK_SYS_REPLY_BOOT_END_OK   = 0x00, // Anything WITHOUT bit .0 set // TODO: Specific value not verified on hardware 
     MEGADUCK_SYS_REPLY_BOOT_END_FAIL = 0x01, // Anything WITH    bit .0 set // TODO: Specific value not verified on hardware 
 
-    MEGADUCK_SYS_REPLY_CMD_INIT_UNKNOWN_0x09   = 0xFF, // TODO: Not verified on hardware, need to snoop it
+    MEGADUCK_SYS_REPLY_CMD_INIT_UNKNOWN_0x09   = 0x01, // 0xFF, // TODO: Not verified on hardware, need to snoop it
     MEGADUCK_SYS_REPLY_SEND_BUFFER_OK          = 0x03, // Verified
     MEGADUCK_SYS_REPLY_SEND_BUFFER_MAYBE_ERROR = 0x06, // Still not sure what this signifies, but failure of some kind
 
@@ -162,10 +167,12 @@ enum {
     MEGADUCK_SYS_CMD_ABORT_OR_FAIL            = 0x04,  // TODO: What does this do and why?
     MEGADUCK_SYS_CMD_PLAYSPEECH               = 0x05,  // Play pre-recorded speech samples (range 1-6, no audio enable required). Playback of one sample can be interrupted by request for playback of another sample
     MEGADUCK_SYS_CMD_RUN_CART_IN_SLOT         = 0x08,  //
-    MEGADUCK_SYS_CMD_INIT_UNKNOWN_0x09        = 0x09,  // May also be PrintScreen related
+    MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO  = 0x09,  // May also be PrintScreen related
     MEGADUCK_SYS_CMD_RTC_SET_DATE_AND_TIME    = 0x0B,  // Sets Hardware RTC Date and Time using multi-byte buffer send/TX
     MEGADUCK_SYS_CMD_RTC_GET_DATE_AND_TIME    = 0x0C,  // Requests a multi-byte buffer with RTC data from Peripheral
+    MEGADUCK_SYS_CMD_PRINT_SEND_BYTES         = 0x11,  // May also be PrintScreen related
 };
+
 
 
 // Set RTC command (From Duck -> Peripheral)
