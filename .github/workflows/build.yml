@@ -27,7 +27,7 @@ jobs:
           ${{ matrix.cc }} -v; (make -j CONF=release CC=${{ matrix.cc }} || (echo "==== Build Failed ==="; make CONF=release CC=${{ matrix.cc }}))
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SuperJuniorSameDuck-${{ matrix.os }}-${{ matrix.cc }}
           path: |
