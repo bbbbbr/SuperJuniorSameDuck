@@ -328,6 +328,8 @@ static void handle_events(GB_gameboy_t *gb)
                     // Handle closing the printer preview window
                     if (event.window.windowID == SDL_GetWindowID(MD_printer_preview_get_window())) {
                         MD_printer_preview_cleanup();
+                        // Make sure context is restored to main window
+                        restore_main_window_context();
                     }
                 }
                 break;
@@ -340,6 +342,8 @@ static void handle_events(GB_gameboy_t *gb)
                 // Handle click-to-save in the printer preview window
                 if (event.window.windowID == SDL_GetWindowID(MD_printer_preview_get_window())) {
                     MD_printer_save_image_to_png();
+                    // Make sure context is restored to main window
+                    restore_main_window_context();
                 }
 
                 break;

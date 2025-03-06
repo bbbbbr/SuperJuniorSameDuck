@@ -51,8 +51,8 @@ void MD_printer_preview_init(int width, int height) {
 
         SDL_SetPaletteColors(surface->format->palette, palette_8bpp, 0, 256);
 
-        restore_main_window_context();
     }
+    restore_main_window_context();
 }
 
 

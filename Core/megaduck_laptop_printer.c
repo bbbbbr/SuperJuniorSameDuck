@@ -98,9 +98,14 @@ static void clear_image(void) {
 }
 
 
+// Pass through which adds preview size
+void MD_printer_open_preview(void) {
+    MD_printer_preview_init(PRINTER_WIDTH_PX, PRINTER_HEIGHT_PX);
+}
+
 // Init MegaDuck Laptop Printer
 // Init is sent via MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO
-uint8_t  MD_printer_init(GB_megaduck_laptop_t * periph) {
+uint8_t MD_printer_init(GB_megaduck_laptop_t * periph) {
 
     printer.state = PRINTER_STATE_INITIALIZED;
     printer.type  = PRINTER_TYPE;
@@ -115,7 +120,7 @@ uint8_t  MD_printer_init(GB_megaduck_laptop_t * periph) {
     printer.init_cmd_count++;
     printf("- MD_printer_init #%d\n", printer.init_cmd_count);
     if (printer.init_cmd_count >= INIT_COUNT_THRESHOLD_SHOW_PREVIEW)
-        MD_printer_preview_init(PRINTER_WIDTH_PX, PRINTER_HEIGHT_PX);
+        MD_printer_open_preview();
 
     uint8_t printer_reply = PRINTER_INIT_OK | printer.type;
     return (printer_reply);
@@ -237,12 +242,13 @@ static void do_line_feed(void) {
     // The intent here is to avoid popping the printer window on
     // startup when it's not being used.
     //
-    // System ROM:     1x startup, 3x before printing
+    // System ROM SPA: 1x startup, 3x before printing
+    // System ROM GER: 1x startup, 0x before printing
     // Bilder Lexikon: 1x startup, 1x before printing
     // Data Bank:      1x startup, 0x before printing
     if (printer.init_cmd_count < INIT_COUNT_THRESHOLD_SHOW_PREVIEW) {
         printer.init_cmd_count++;
-        MD_printer_preview_init(PRINTER_WIDTH_PX, PRINTER_HEIGHT_PX);    
+        MD_printer_open_preview();
     }
 }
 

@@ -45,7 +45,6 @@
 // #define DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
 // #define DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
 
-
 #define MEGADUCK_BUF_SZ  256
 
 // Unlike the game boy which (reportedly) inits SP to 0x0000, the stack on MegaDuck is
@@ -78,6 +77,8 @@ typedef struct {
     uint8_t key_modifiers;
     uint8_t last_key;
     uint8_t last_key_modifiers;
+
+    int32_t t_states_print_done_timeout;
 
     time_t time_delta_rtc_vs_host;
 
@@ -245,6 +246,9 @@ enum {
     MEGADUCK_LAPTOP_TICK_COUNT_TX_BUF_REPLY_NEXT  = (int)MEGADUCK_LAPTOP_TICK_DELAY_MSEC(2),    // TODO: Not verified on hardware, assumed based on System ROM
 
     MEGADUCK_LAPTOP_EXT_CLOCK_SEND_INDEX_RESET = 0,
+
+    MEGADUCK_LAPTOP_PRINT_DONE_IDLE = 0,
+    MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE = (int)MEGADUCK_LAPTOP_TICK_DELAY_MSEC(3000),  // 3 seconds seems reasonable
 
 };
 

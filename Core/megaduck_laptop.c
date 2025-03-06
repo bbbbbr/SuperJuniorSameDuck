@@ -34,6 +34,9 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
 
     switch (periph->byte_being_received) {
         case MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO:
+            // Log printer as active
+            periph->t_states_print_done_timeout = MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE;
+
             periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO;
             // TODO Bit.1 indicates printer type (1 = single pass large buffer, 0 = two pass small buffer)
             // So maybe 0x01 = 2 pass printing, 0x03 = 1 pass printing
@@ -57,8 +60,15 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             break;
 
         case MEGADUCK_SYS_CMD_PRINT_SEND_BYTES:
+            // Try to heuristically re-open the printer window if needed (but only when useful)
+            if (periph->t_states_print_done_timeout <= MEGADUCK_LAPTOP_PRINT_DONE_IDLE) {
+                MD_printer_init(periph);
+            }
+
             periph->state = MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES;
             MD_receive_buf_init(periph);
+            // Log printer as active
+            periph->t_states_print_done_timeout = MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE;
             break;
 
         case MEGADUCK_SYS_CMD_PLAYSPEECH:
@@ -254,6 +264,14 @@ void GB_megaduck_laptop_peripheral_update(GB_gameboy_t *gb, uint8_t cycles) {
     // GB_log(gb, "  megaduck_laptop [EXT CLK] --------TICK---------\n");
     // Reset counter until next update
     periph->t_states_till_update = MEGADUCK_LAPTOP_TICK_COUNT_RESET;
+
+    // Since the German System ROM and DataBank don't re-init the printer when
+    // starting a new print job, try to detect it by elapsed time since the
+    // last print activity was detected. That way the print preview window can
+    // be re-opened if needed in the absence of the print init command.
+    if (periph->t_states_print_done_timeout > MEGADUCK_LAPTOP_PRINT_DONE_IDLE) {
+        periph->t_states_print_done_timeout -= MEGADUCK_LAPTOP_TICK_COUNT_RESET;
+    }
 
     if (periph->ext_clk_send_buf_size > 0) {
 
