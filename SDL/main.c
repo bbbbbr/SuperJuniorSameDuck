@@ -335,15 +335,16 @@ static void handle_events(GB_gameboy_t *gb)
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP: {
-                if (GB_has_accelerometer(gb) && configuration.allow_mouse_controls) {
-                    GB_set_key_state(gb, GB_KEY_A, event.type == SDL_MOUSEBUTTONDOWN);
-                }
                 // Handle click-to-save in the printer preview window
                 if (event.window.windowID == SDL_GetWindowID(MD_printer_preview_get_window())) {
                     MD_printer_save_image_to_png();
                     // Make sure context is restored to main window
                     restore_main_window_context();
+                }
+                // Now Fall through to SDL_MOUSEBUTTONUP
+            case SDL_MOUSEBUTTONUP: {
+                if (GB_has_accelerometer(gb) && configuration.allow_mouse_controls) {
+                    GB_set_key_state(gb, GB_KEY_A, event.type == SDL_MOUSEBUTTONDOWN);
                 }
 
                 break;
