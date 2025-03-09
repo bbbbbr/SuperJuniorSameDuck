@@ -54,8 +54,8 @@
 enum {
     MEGADUCK_PRINTER_TYPE_2_PASS = 0x00, // Bit.1 = 0  // 13 x 12 byte packets + 1 x 5 or 6 byte packet (with CR and/or LF)
     MEGADUCK_PRINTER_TYPE_1_PASS = 0x02, // Bit.1 = 1  // 3 x 12 byte packets + 118 non-packet bytes
-    MEGADUCK_PRINTER_TYPE = MEGADUCK_PRINTER_TYPE_2_PASS,
-    // MEGADUCK_PRINTER_TYPE = MEGADUCK_PRINTER_TYPE_1_PASS,
+    MEGADUCK_PRINTER_TYPE_DEFAULT = MEGADUCK_PRINTER_TYPE_2_PASS,
+    // MEGADUCK_PRINTER_TYPE_DEFAULT = MEGADUCK_PRINTER_TYPE_1_PASS,
 
     MEGADUCK_PRINTER_BULK_TILE_ROW_RX_SIZE = 118,  // 118 RX bytes for bulk portion of printer tile row (excluding 4 x 12 bytes prologue per tile row)
 };

@@ -1215,6 +1215,11 @@ int main(int argc, char **argv)
     }
     workboy_enabled         = get_arg_flag("--workboy", &argc, argv);
     megaduck_laptop_enabled = get_arg_flag("--megaduck_laptop", &argc, argv);
+    
+    if (get_arg_flag("--duck_printer_1pass", &argc, argv))
+        MD_printer_connect(MEGADUCK_PRINTER_TYPE_1_PASS);
+    else if (get_arg_flag("--duck_printer_2pass", &argc, argv))
+        MD_printer_connect(MEGADUCK_PRINTER_TYPE_2_PASS);
 
     const char *model_string = get_arg_option("--model", &argc, argv);
     bool fullscreen = get_arg_flag("--fullscreen", &argc, argv) || get_arg_flag("-f", &argc, argv);
@@ -1229,7 +1234,7 @@ int main(int argc, char **argv)
 
     if (argc > 2 || (argc == 2 && argv[1][0] == '-')) {
         fprintf(stderr, "Super Junior SameDuck v" GB_VERSION "\n");
-        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy | --megaduck_laptop] <rom>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy | --megaduck_laptop] [--duck_printer_1pass | --duck_printer_2pass] <rom>\n", argv[0]);
         exit(1);
     }
 

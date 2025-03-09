@@ -70,6 +70,7 @@ typedef struct {
     // MegaDuck Printer IO state and values
     uint8_t  state;
     uint8_t  type;
+    bool     connected;
     int      init_cmd_count;
     int      tilepos_x, tilepos_y;
     int      cache_count;
@@ -81,13 +82,14 @@ typedef struct {
 } GB_megaduck_printer_t;
 
 static GB_megaduck_printer_t printer = 
-    {.state = PRINTER_STATE_RESET,
+    {.connected = false, // By default printer is not connected unless requested via CLI args
+    .state = PRINTER_STATE_RESET,
     .tilepos_x = 0,
     .tilepos_y = 0,
     .cache_count = 0,
     .cache_used = 0,
     .tile_row_packet_count = 0,
-    .type  = MEGADUCK_PRINTER_TYPE,
+    .type  = MEGADUCK_PRINTER_TYPE_DEFAULT,
     .init_cmd_count = 0 };
 
 
@@ -105,6 +107,16 @@ uint8_t MD_printer_get_type(void) {
 }
 
 
+// Expects type to be one of:
+//   MEGADUCK_PRINTER_TYPE_1_PASS
+//   MEGADUCK_PRINTER_TYPE_2_PASS
+void MD_printer_connect(uint8_t printer_type) {
+
+    printer.type = printer_type;
+    printer.connected = true;
+}
+
+
 // Pass through which adds preview size
 void MD_printer_open_preview(void) {
     MD_printer_preview_init(PRINTER_WIDTH_PX, PRINTER_HEIGHT_PX);
@@ -114,23 +126,32 @@ void MD_printer_open_preview(void) {
 // Init is sent via MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO
 uint8_t MD_printer_init(GB_megaduck_laptop_t * periph) {
 
-    printer.state       = PRINTER_STATE_INITIALIZED;
-    printer.type        = MEGADUCK_PRINTER_TYPE;
-    printer.tilepos_x   = 0;
-    printer.tilepos_y   = 0;
-    printer.cache_count = 0;
-    printer.cache_used  = 0;
-    printer.tile_row_packet_count = 0;
-    clear_image();
-    
-    // The system ROM sends a query/init printer command on startup,
-    // don't show the preview window until 2+ commands have come in.
-    printer.init_cmd_count++;
-    printf("- MD_printer_init #%d\n", printer.init_cmd_count);
-    if (printer.init_cmd_count >= INIT_COUNT_THRESHOLD_SHOW_PREVIEW)
-        MD_printer_open_preview();
+    uint8_t printer_reply;
 
-    uint8_t printer_reply = PRINTER_INIT_OK | printer.type;
+    if (printer.connected) {
+        printer.state       = PRINTER_STATE_INITIALIZED;
+        printer.tilepos_x   = 0;
+        printer.tilepos_y   = 0;
+        printer.cache_count = 0;
+        printer.cache_used  = 0;
+        printer.tile_row_packet_count = 0;
+        clear_image();
+        
+        // The system ROM sends a query/init printer command on startup,
+        // don't show the preview window until 2+ commands have come in.
+        printer.init_cmd_count++;
+        printf("- MD_printer_init #%d\n", printer.init_cmd_count);
+        if (printer.init_cmd_count >= INIT_COUNT_THRESHOLD_SHOW_PREVIEW)
+            MD_printer_open_preview();
+
+        printer_reply = PRINTER_INIT_OK | printer.type;
+    }
+    else {
+        printf("- MD_printer_init REJECTED: No printer connected.\n"
+               "  try --duck_printer_1pass or --duck_printer_2pass\n");
+        printer_reply = PRINTER_INIT_FAIL;
+    }
+
     return (printer_reply);
 }
 

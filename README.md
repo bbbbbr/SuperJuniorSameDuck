@@ -10,6 +10,8 @@ A fork of SameBoy with various patches for MegaDuck development and emulation.
 Added CLI flags:
 - `--megaduck_laptop`: Turn on  MegaDuck Super Junior/Quique Laptop emulation and SDL keyboard support (`F12` to toggle keyboard)
   -  If running the System ROM then also use `--force-mbc 0xE0`
+- `--duck_printer_1pass` or `--duck_printer_2pass`: Turn on MegaDuck printer emulation
+  - With keyboard support enabled, use `scroll lock` or `print screen` keys to emulate print screen key.
 - `--workboy`: Turn on Workboy emulation and SDL keyboard support (`F12` to toggle keyboard)
 - `--force-mbc <hex mbc number>`: Explicitly specify which MBC to use, do not use header or other detection. Allows using MegaDuck ROMs built for Game Boy MBCs (such as MBC5) as well as avoiding heuristics for other ROMs. 
   - `0xE0`:  MegaDuck Laptop System ROM MBC
