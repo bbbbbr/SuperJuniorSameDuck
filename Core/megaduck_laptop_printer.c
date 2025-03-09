@@ -47,20 +47,18 @@ static bool save_image_to_png(char * filename_out);
 #define PRINTER_CR_IDX               (PRINTER_LEN_5_END_ROW_CR - 1)   // Byte number 5
 #define PRINTER_LF_IDX               (PRINTER_LEN_6_END_ROW_CRLF - 1) // Byte number 6
 
-
-// - Optionally supports 2-pass printing (depending on bit .1 of CMD 9 response)
-//   - bit.1: 0 = supported, 1 = not supported
-#define PRINTER_TYPE_1_PASS (0x03) // Bit.1 = 1  // Large buffer type
-#define PRINTER_TYPE_2_PASS (0x01) // Bit.1 = 0  // Small buffer type
-#define PRINTER_TYPE (PRINTER_TYPE_2_PASS)
-
+// Used in printer init reply
 // Assumed it is 1, but won't know until have hardware to test with
+// Bit.0
 #define PRINTER_INIT_OK   0x01
 #define PRINTER_INIT_FAIL 0x00
 
 #define PRINT_TONE_WHITE  0xFF  // Full White
 #define PRINT_TONE_MED    0x7F  // 50% grey
 #define PRINT_TONE_DARK   0x00  // Full black
+
+
+#define PRINT_1_PASS_PACKET_TO_BULK_SWITCH_THRESHOLD 4 // switch to non-packetized bulk transfer after 4 packets
 
 enum {
     PRINTER_STATE_RESET,
@@ -76,6 +74,7 @@ typedef struct {
     int      tilepos_x, tilepos_y;
     int      cache_count;
     int      cache_used;
+    int      tile_row_packet_count;
     uint8_t  tile_cache[ER_TILE_CACHE_SZ];
     uint8_t  image[PRINTER_WIDTH_PX * PRINTER_HEIGHT_PX];
 
@@ -87,7 +86,8 @@ static GB_megaduck_printer_t printer =
     .tilepos_y = 0,
     .cache_count = 0,
     .cache_used = 0,
-    .type  = PRINTER_TYPE,
+    .tile_row_packet_count = 0,
+    .type  = MEGADUCK_PRINTER_TYPE,
     .init_cmd_count = 0 };
 
 
@@ -95,6 +95,13 @@ static void clear_image(void) {
 
     memset(printer.image, PRINT_TONE_WHITE, sizeof(printer.image));
     memset(printer.tile_cache, 0, sizeof(printer.tile_cache));
+}
+
+
+// Return which printer type is in use (Single or Double Pass) without 
+// the OK status bit included. For 1 vs 2 Pass protocol handling.
+uint8_t MD_printer_get_type(void) {
+    return printer.type;
 }
 
 
@@ -107,12 +114,13 @@ void MD_printer_open_preview(void) {
 // Init is sent via MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO
 uint8_t MD_printer_init(GB_megaduck_laptop_t * periph) {
 
-    printer.state = PRINTER_STATE_INITIALIZED;
-    printer.type  = PRINTER_TYPE;
-    printer.tilepos_x = 0;
-    printer.tilepos_y = 0;
+    printer.state       = PRINTER_STATE_INITIALIZED;
+    printer.type        = MEGADUCK_PRINTER_TYPE;
+    printer.tilepos_x   = 0;
+    printer.tilepos_y   = 0;
     printer.cache_count = 0;
-    printer.cache_used = 0;
+    printer.cache_used  = 0;
+    printer.tile_row_packet_count = 0;
     clear_image();
     
     // The system ROM sends a query/init printer command on startup,
@@ -157,7 +165,7 @@ static void process_tile(uint8_t * tile_buf) {
                 uint32_t pixel_index = (tile_st_px + tile_x) + ((tile_st_py + tile_y) * PRINTER_WIDTH_PX);
                 // Buffer range check
                 if (pixel_index < sizeof(printer.image)) {
-                    if (printer.type == PRINTER_TYPE_2_PASS)
+                    if (printer.type == MEGADUCK_PRINTER_TYPE_2_PASS)
                         printer.image[pixel_index] -= PRINT_TONE_MED;
                     else
                         printer.image[pixel_index] = PRINT_TONE_DARK;
@@ -192,7 +200,11 @@ static void reset_rx_cache(void) {
 static void handle_gfx_bytes(uint8_t * p_bytes, uint8_t byte_count) {
     
     if ((printer.cache_count + byte_count) <= sizeof(printer.tile_cache)) {
-        memcpy(&(printer.tile_cache[printer.cache_count]), p_bytes, byte_count);
+        // Transfers will be 1 byte when in Single Pass mode + bulk transfer stage
+        if (byte_count == 1)
+            printer.tile_cache[printer.cache_count] = *p_bytes;
+        else
+            memcpy(&(printer.tile_cache[printer.cache_count]), p_bytes, byte_count);
         printer.cache_count += byte_count;
 
         // Print any available tiles in the buffer
@@ -216,9 +228,12 @@ static void handle_page_done(void) {
 
 
 static void do_carriage_return(void) {
+
     // Reset to start of line
     // printf("- Printer: CR\n");
     printer.tilepos_x = 0;
+    // Reset packet count for the tile row so Type 1 printers know when to switch from packets to bulk mode
+    printer.tile_row_packet_count = 0;
     // Carriage return seems to expect that all tiles bytes for a row will have been sent (160)
     // So OK to reset the rx cache buffer
     reset_rx_cache();
@@ -253,11 +268,46 @@ static void do_line_feed(void) {
 }
 
 
+// Single Pass printer has a special scenario where after the 4 packets of 12 bytes
+// the transfer mode switches from multi-buffer to a non-packetized stream of bytes with ACKs                            
+bool MD_printer_check_switch_to_bulk_rx(void) {
+
+    return ( (printer.type == MEGADUCK_PRINTER_TYPE_1_PASS) &&
+             (printer.tile_row_packet_count >= PRINT_1_PASS_PACKET_TO_BULK_SWITCH_THRESHOLD));
+}
+
+
+void MD_printer_process_bulk_data(GB_megaduck_laptop_t * periph) {
+
+    if (printer.state == PRINTER_STATE_INITIALIZED) {
+        if (MD_printer_check_switch_to_bulk_rx() == true) {
+            // handle rx of 1 byte
+            handle_gfx_bytes(&periph->byte_being_received, 1);
+        }
+        // else
+        //     printf("MD_printer_process_bulk_data: Got rx byte but not in bulk mode!\n");
+    }
+    // else
+    //     printf("MD_printer_process_bulk_data: Got rx byte but printer not initialized!\n");
+
+}
+
+
+// Mystery: What are the 6 extra bytes for in Single Pass mode?
+//          Single Pass: (4 * 12 bytes) + 118 bytes = 166 bytes
+//          Double Pass: (13 * 12 bytes) + (4 bytes) = 160 bytes + 1 or 2 bytes for CR and/or LF
+//          For tile data each row needs 160 bytes, and the extras
+//          aren't set to CR/LF. Seems hardware auto-detects those needed?
+void MD_printer_finalize_bulk_data(void) {
+    // In addition to completing the tile row
+    // these also reset per-tile row tracking vars
+    do_carriage_return();
+    do_line_feed();
+}
+
+
 // Process data sent to the MegaDuck Laptop Printer (from Duck ROM perspective)
 // Bytes are sent via MEGADUCK_SYS_CMD_PRINT_SEND_BYTES
-//
-// TODO: Support for the alternate reduced packet count mode
-//       where it's 3 x 12 bytes + 118 bytes unpacketized
 //
 void MD_printer_process_buf(GB_megaduck_laptop_t * periph) {
     uint8_t * rxbuf = periph->rx_buffer;
@@ -279,6 +329,8 @@ void MD_printer_process_buf(GB_megaduck_laptop_t * periph) {
 
             case PRINTER_LEN_12_ROW_DATA:
                 handle_gfx_bytes(periph->rx_buffer, PRINTER_LEN_12_ROW_DATA);
+                // Count packets for when to switch into bulk mode for single pass printer
+                printer.tile_row_packet_count++;
                 break;
 
             default:

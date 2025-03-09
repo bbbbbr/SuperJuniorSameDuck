@@ -36,10 +36,9 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
         case MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO:
             // Log printer as active
             periph->t_states_print_done_timeout = MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE;
-
-            periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO;
-            // TODO Bit.1 indicates printer type (1 = single pass large buffer, 0 = two pass small buffer)
+            // Bit.1 indicates printer type (1 = single pass large buffer, 0 = two pass small buffer)
             // So maybe 0x01 = 2 pass printing, 0x03 = 1 pass printing
+            periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO;
             MD_send_buf_enqueue(periph, MD_printer_init(periph)); // MEGADUCK_SYS_REPLY_CMD_INIT_UNKNOWN_0x09
             MD_send_buf_finalize_and_transmit(periph);
             break;
@@ -128,6 +127,17 @@ static void handle_received_byte(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
         case MEGADUCK_SYS_STATE_GET_KEYS_WAIT_ACK:
         case MEGADUCK_SYS_STATE_GET_RTC_WAIT_ACK:
             MD_send_buf_handle_tx_reply(periph);
+            break;
+
+        case MEGADUCK_SYS_STATE_PRINT_SEND_BULK_RX:
+            // Log printer as still active, and transfer byte to it
+            periph->t_states_print_done_timeout = MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE;
+            MD_printer_process_bulk_data(periph);
+            //  Queue up a return ACK for it
+            periph->rx_bulk_count++;
+            periph->state = MEGADUCK_SYS_STATE_PRINT_SEND_BULK_ACK;
+            MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_PRINTER_BULK_ACK);
+            MD_send_buf_finalize_and_transmit(periph);            
             break;
     }
 }
@@ -327,12 +337,28 @@ void GB_megaduck_laptop_peripheral_update(GB_gameboy_t *gb, uint8_t cycles) {
 
                     case MEGADUCK_SYS_STATE_CMD_PLAYSPEECH: // Fall through to shared handling
                     case MEGADUCK_SYS_STATE_CMD_SET_RTC:
-                    case MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES:
                         // Multi-byte buffer receive
                         if ((periph->rx_buffer_state == MEGADUCK_RX_BUF_4_DONE) ||
                             (periph->rx_buffer_state == MEGADUCK_RX_BUF_5_FAIL)) {
                             // Return to initialized ready waiting state
                             periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;
+                        }
+                        break;
+
+                    case MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES:
+                        // Multi-byte buffer receive
+                        if ((periph->rx_buffer_state == MEGADUCK_RX_BUF_4_DONE) ||
+                            (periph->rx_buffer_state == MEGADUCK_RX_BUF_5_FAIL)) {
+                            // Single Pass printer has a special scenario where after 4 packets of 12 bytes
+                            // the transfer mode switches from multi-buffer to a non-packetized stream of bytes with acks                            
+                            if (MD_printer_check_switch_to_bulk_rx() == true) {
+                               periph->state = MEGADUCK_SYS_STATE_PRINT_SEND_BULK_RX;
+                               periph->rx_bulk_count = 0;
+                               periph->rx_bulk_size = MEGADUCK_PRINTER_BULK_TILE_ROW_RX_SIZE;
+                            } else {
+                                // Return to initialized ready waiting state
+                                periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;
+                            }
                         }
                         break;
 
@@ -344,6 +370,24 @@ void GB_megaduck_laptop_peripheral_update(GB_gameboy_t *gb, uint8_t cycles) {
                     case MEGADUCK_SYS_STATE_GET_RTC_TX:
                         // Last byte sent, now wait for acknowledgement
                         periph->state = MEGADUCK_SYS_STATE_GET_RTC_WAIT_ACK;
+                        break;
+
+                    case MEGADUCK_SYS_STATE_PRINT_SEND_BULK_ACK:
+                        // If still more data to receive then prepare for incoming byte,
+                        // otherwise set up to send the final ACK
+                        if (periph->rx_bulk_count < periph->rx_bulk_size)
+                            periph->state = MEGADUCK_SYS_STATE_PRINT_SEND_BULK_RX;
+                        else {
+                            periph->state = MEGADUCK_SYS_STATE_PRINT_SEND_BULK_ROW_END_ACK;
+                            MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_PRINTER_BULK_ACK);
+                            MD_send_buf_finalize_and_transmit(periph);
+                            MD_printer_finalize_bulk_data();
+                        }
+                        break;
+
+                    case MEGADUCK_SYS_STATE_PRINT_SEND_BULK_ROW_END_ACK:
+                        // Done with current Tile Row bulk transfer
+                        periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;
                         break;
 
                 }

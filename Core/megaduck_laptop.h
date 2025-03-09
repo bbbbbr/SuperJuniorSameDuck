@@ -47,6 +47,19 @@
 
 #define MEGADUCK_BUF_SZ  256
 
+
+// Used in printer init reply
+// - Optionally supports 2-pass printing (depending on bit .1 of CMD 9 response)
+//   - bit.1: 0 = supported, 1 = not supported
+enum {
+    MEGADUCK_PRINTER_TYPE_2_PASS = 0x00, // Bit.1 = 0  // 13 x 12 byte packets + 1 x 5 or 6 byte packet (with CR and/or LF)
+    MEGADUCK_PRINTER_TYPE_1_PASS = 0x02, // Bit.1 = 1  // 3 x 12 byte packets + 118 non-packet bytes
+    MEGADUCK_PRINTER_TYPE = MEGADUCK_PRINTER_TYPE_2_PASS,
+    // MEGADUCK_PRINTER_TYPE = MEGADUCK_PRINTER_TYPE_1_PASS,
+
+    MEGADUCK_PRINTER_BULK_TILE_ROW_RX_SIZE = 118,  // 118 RX bytes for bulk portion of printer tile row (excluding 4 x 12 bytes prologue per tile row)
+};
+
 // Unlike the game boy which (reportedly) inits SP to 0x0000, the stack on MegaDuck is
 // different.
 // - On handhelds it seems to be random-ish at power-up
@@ -90,6 +103,9 @@ typedef struct {
     int     rx_buffer_count;
     uint8_t rx_buffer[MEGADUCK_BUF_SZ];
 
+    int     rx_bulk_size;
+    int     rx_bulk_count;
+
     // Power-On Init Counter state
     uint8_t init_counter;
 
@@ -119,9 +135,13 @@ enum {
     MEGADUCK_SYS_STATE_GET_KEYS_TX,                   // External Clock
     MEGADUCK_SYS_STATE_GET_KEYS_WAIT_ACK,
 
-    MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES,         // External Clock (partial)
+    MEGADUCK_SYS_STATE_CMD_PRINT_SEND_BYTES,          // External Clock (partial)
 
     MEGADUCK_SYS_STATE_CMD_PLAYSPEECH,                // External Clock (partial)
+
+    MEGADUCK_SYS_STATE_PRINT_SEND_BULK_RX,                  
+    MEGADUCK_SYS_STATE_PRINT_SEND_BULK_ACK,           // External Clock
+    MEGADUCK_SYS_STATE_PRINT_SEND_BULK_ROW_END_ACK,   // External Clock
 
 
     MEGADUCK_SYS_POWER_ON_RESET  = MEGADUCK_SYS_STATE_INIT_1_WAIT_RX_COUNTER,
@@ -157,6 +177,7 @@ enum {
     MEGADUCK_SYS_REPLY_NO_CART_IN_SLOT  = 0x06,  // Maybe also some failure during serial IO multi-byte buffer send
     MEGADUCK_SYS_REPLY_MAYBE_KBD_START  = 0x0E,  // Maybe 0x0E ... why 0x04 when logged? Reply at start of a 4 byte keyboard reply packet
 
+    MEGADUCK_SYS_REPLY_PRINTER_BULK_ACK   = 0x01,  // TODO: Not verified on hardware, but also system ROM discards the value. It just wants *any* byte
 };
 
 
