@@ -7,6 +7,8 @@
 
 #include "megaduck_laptop_periph.h"
 
+bool cart_swap_ducklaptop();
+
 
 
 // Serial clock speed used is: 8192 Hz  1 KB/s  Bit 1 cleared, Normal speed
@@ -73,6 +75,20 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
         case MEGADUCK_SYS_CMD_PLAYSPEECH:
             periph->state = MEGADUCK_SYS_STATE_CMD_PLAYSPEECH;
             MD_receive_buf_init(periph);
+            break;
+
+        case MEGADUCK_SYS_CMD_RUN_CART_IN_SLOT:
+            // TODO: To be closer to the actual Duck Laptop hardware the run cart command should be changed
+            //       to preserve WRAM, VRAM and maybe SRAM(?)
+            bool cart_loaded = cart_swap_ducklaptop();
+            if (cart_loaded)
+                MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_BOOT_OK);  // TODO: Unverified if this is the response on success
+            else
+                MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_NO_CART_IN_SLOT);
+            // Send enqueued command reply
+            periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_RUN_CART_IN_SLOT;
+            MD_send_buf_finalize_and_transmit(periph);
+            // }
             break;
 
         default:
@@ -396,6 +412,10 @@ void GB_megaduck_laptop_peripheral_update(GB_gameboy_t *gb, uint8_t cycles) {
                         periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;
                         break;
 
+                    case MEGADUCK_SYS_STATE_REPLY_CMD_RUN_CART_IN_SLOT:
+                        // Return to initialized ready waiting state
+                        periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;
+                        break;
                 }
             } else {
                 // If there is another byte to send, reset and add a longer delay until next serial bit send

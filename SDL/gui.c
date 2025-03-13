@@ -334,6 +334,17 @@ static void open_rom(unsigned index)
         pending_command = GB_SDL_NEW_FILE_COMMAND;
     }
 }
+// A clone of open_rom, but with a return value and no arguments
+bool cart_swap_ducklaptop(void)
+{
+    char *filename = do_open_rom_dialog();
+    if (filename) {
+        set_filename(filename, free);
+        pending_command = GB_SDL_NEW_FILE_COMMAND;
+        return true;
+    } else
+        return false;
+}
 
 static void cart_swap(unsigned index)
 {

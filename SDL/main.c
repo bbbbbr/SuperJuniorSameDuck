@@ -852,7 +852,7 @@ static void load_boot_rom(GB_gameboy_t *gb, GB_boot_rom_t type)
 }
 
 
-// MegaDuck: This needs to happen after GB_init() and GB_reset_internal() so overrides don't get wiped out
+// MegaDuck: This needs to happen after GB_init(), GB_reset_internal() and GB_reset() so overrides don't get wiped out
 static void check_attach_cli_peripherals(GB_gameboy_t *gb) {
     if (strlen(mbc_string) > 0) {
         GB_set_forced_mbc(gb, true, (uint8_t)strtol(mbc_string, NULL, 16));
@@ -940,6 +940,7 @@ restart:
         }
         else {
             GB_switch_model_and_reset(&gb, model);
+            check_attach_cli_peripherals(&gb);
         }
     }
     else {
