@@ -39,7 +39,7 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             // Bit.1 indicates printer type (1 = single pass large buffer, 0 = two pass small buffer)
             // So maybe 0x01 = 2 pass printing, 0x03 = 1 pass printing
             periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO;
-            MD_send_buf_enqueue(periph, MD_printer_init(periph)); // MEGADUCK_SYS_REPLY_CMD_INIT_UNKNOWN_0x09
+            MD_send_buf_enqueue(periph, MD_printer_init(periph)); // MEGADUCK_SYS_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO
             MD_send_buf_finalize_and_transmit(periph);
             break;
 
@@ -355,6 +355,12 @@ void GB_megaduck_laptop_peripheral_update(GB_gameboy_t *gb, uint8_t cycles) {
                                periph->state = MEGADUCK_SYS_STATE_PRINT_SEND_BULK_RX;
                                periph->rx_bulk_count = 0;
                                periph->rx_bulk_size = MEGADUCK_PRINTER_BULK_TILE_ROW_RX_SIZE;
+                            } else if (MD_printer_check_2_pass_row_end_ack()) {
+                                // There is a row end ack expected for 2-pass printer as well
+                                // TODO: Should there be a delay (up to 200ms?) for the print head to return?
+                                periph->state = MEGADUCK_SYS_STATE_PRINT_SEND_BULK_ROW_END_ACK;
+                                MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_PRINTER_BULK_ACK);
+                                MD_send_buf_finalize_and_transmit(periph);
                             } else {
                                 // Return to initialized ready waiting state
                                 periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;

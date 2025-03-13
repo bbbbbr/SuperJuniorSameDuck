@@ -167,7 +167,7 @@ enum {
     MEGADUCK_SYS_REPLY_BOOT_END_OK   = 0x00, // Anything WITHOUT bit .0 set // TODO: Specific value not verified on hardware 
     MEGADUCK_SYS_REPLY_BOOT_END_FAIL = 0x01, // Anything WITH    bit .0 set // TODO: Specific value not verified on hardware 
 
-    MEGADUCK_SYS_REPLY_CMD_INIT_UNKNOWN_0x09   = 0x01, // 0xFF, // TODO: Not verified on hardware, need to snoop it
+    MEGADUCK_SYS_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO   = 0x01, // 0xFF, // TODO: Not verified on hardware, need to snoop it
     MEGADUCK_SYS_REPLY_SEND_BUFFER_OK          = 0x03, // Verified
     MEGADUCK_SYS_REPLY_SEND_BUFFER_MAYBE_ERROR = 0x06, // Still not sure what this signifies, but failure of some kind
 
@@ -192,7 +192,7 @@ enum {
     MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO  = 0x09,  // May also be PrintScreen related
     MEGADUCK_SYS_CMD_RTC_SET_DATE_AND_TIME    = 0x0B,  // Sets Hardware RTC Date and Time using multi-byte buffer send/TX
     MEGADUCK_SYS_CMD_RTC_GET_DATE_AND_TIME    = 0x0C,  // Requests a multi-byte buffer with RTC data from Peripheral
-    MEGADUCK_SYS_CMD_PRINT_SEND_BYTES         = 0x11,  // May also be PrintScreen related
+    MEGADUCK_SYS_CMD_PRINT_SEND_BYTES         = 0x11,  // Send printer data
 };
 
 

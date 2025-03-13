@@ -166,12 +166,12 @@ static void process_tile(uint8_t * tile_buf) {
     // so transform to pixels should rotate 90 degrees, then flip horizontal
     //
     // Normal tile:    Received tile: (Note changed axes)
-    //    bits          bits
-    // b  --X--         --Y--
-    // y |  0 .. 7     |   0 .. 7
-    // t Y 0           X 0        
-    // e | .           | . 
-    // s | 7           | 7     
+    //    bits           bytes
+    // b  --X--          --X--
+    // y |  7 .. 0    b |   0 .. 7
+    // t Y 0          i Y 7        
+    // e | .          t | . 
+    // s | 7          s | 0     
 
     // TODO: Could optimize this once the idea is proven
 
@@ -295,6 +295,15 @@ bool MD_printer_check_switch_to_bulk_rx(void) {
 
     return ( (printer.type == MEGADUCK_PRINTER_TYPE_1_PASS) &&
              (printer.tile_row_packet_count >= PRINT_1_PASS_PACKET_TO_BULK_SWITCH_THRESHOLD));
+}
+
+
+// This gets queried AFTER the last packet has been received and processed
+// so the expectation is that the row-end terminator packet will
+// have been applied and reset the row packet count to zero
+bool MD_printer_check_2_pass_row_end_ack(void) {
+    // printf("MD_printer_check_2_pass_row_end_ack, printer.tile_row_packet_count == %d\n", printer.tile_row_packet_count);
+    return (printer.tile_row_packet_count == 0);
 }
 
 
