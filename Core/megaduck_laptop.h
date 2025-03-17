@@ -187,10 +187,10 @@ enum {
     MEGADUCK_SYS_CMD_GET_KEYS                 = 0x00,  // Requests a multi-byte buffer with keyboard data from Peripheral
     MEGADUCK_SYS_CMD_DONE_OR_OK               = 0x01,  // TODO: What does this do and why?
     MEGADUCK_SYS_CMD_DONE_OR_OK_AND_SOMETHING = 0x81,  // TODO: Seen this as a keyboard poll done reply instead of 0x01 by the calculator app, not sure what the difference is
-    MEGADUCK_SYS_CMD_ABORT_OR_FAIL            = 0x04,  // TODO: What does this do and why?
+    MEGADUCK_SYS_CMD_ABORT_OR_FAIL            = 0x04,  // Used in some failure conditions
     MEGADUCK_SYS_CMD_PLAYSPEECH               = 0x05,  // Play pre-recorded speech samples (range 1-6, no audio enable required). Playback of one sample can be interrupted by request for playback of another sample
-    MEGADUCK_SYS_CMD_RUN_CART_IN_SLOT         = 0x08,  //
-    MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO  = 0x09,  // May also be PrintScreen related
+    MEGADUCK_SYS_CMD_RUN_CART_IN_SLOT         = 0x08,  // Check if cartridge in slot and run it
+    MEGADUCK_SYS_CMD_PRINT_INIT_MAYBE_EXT_IO  = 0x09,  // Query what printers are connected
     MEGADUCK_SYS_CMD_RTC_SET_DATE_AND_TIME    = 0x0B,  // Sets Hardware RTC Date and Time using multi-byte buffer send/TX
     MEGADUCK_SYS_CMD_RTC_GET_DATE_AND_TIME    = 0x0C,  // Requests a multi-byte buffer with RTC data from Peripheral
     MEGADUCK_SYS_CMD_PRINT_SEND_BYTES         = 0x11,  // Send printer data
