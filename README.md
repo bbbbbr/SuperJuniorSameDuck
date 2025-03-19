@@ -3,9 +3,13 @@
 This is a work in progress! Mainly driven by development and testing needs.
 
 A fork of SameBoy with various patches for MegaDuck development and emulation.
-- Adds (currently partial) support for the MegaDuck Super Junior/Quique Laptop
+- Adds support for the MegaDuck Super Junior/Quique Laptop
+  - Keyboard
+  - RTC
+  - Printers (Single and Double Pass)
+  - SRAM Cart
+  - Run Cart from ROM Slot
 - Improved MegaDuck audio accuracy
-- SDL keyboard support for the existing Workboy emulation
 
 Added CLI flags:
 - `--megaduck_laptop`: Turn on  MegaDuck Super Junior/Quique Laptop emulation and SDL keyboard support (`F12` to toggle keyboard)
@@ -23,6 +27,15 @@ Added CLI flags:
     - 4 x 8k plug-in cart SRAM banks, shares mbc bank switch register with ROM banks (uses Upper Nibble)
   - `0xE1`:  MegaDuck MD 1 (32K banks, rom bank switch reg addr `0xB000`, range 0-1)
   - `0xE2`:  MegaDuck MD 2 (16k banks, rom bank switch reg addr `0x0001`, range 1-3 or 1-7)-  
+
+
+# Screenshots
+![Spanish MegaDuck Laptop Super QuiQue System ROM running](/info/megaduck_systemrom_spanish.png)
+![Bilder Lexikon ROM Cart running](/info/megaduck_bilderlexikon.png)
+![Bilder Databank ROM Cart running](/info/megaduck_databank.png)
+![Duck Duck Wordyl printout](/info/megaduck_wordyl_printout.png)
+![DataBank Printout](/info/megaduck_databank_printout.png)
+
 
 # Original Repo Readme Below
 ----------------
