@@ -6,15 +6,19 @@
 #define WORKBOY_SERIAL_LOGGING_ENABLED
 //#define WORKBOY_SERIAL_LOG_ALL_IN_OUT
 
-static inline uint8_t int_to_bcd(uint8_t i)
+static uint8_t int_to_bcd(uint8_t i);
+// static uint8_t bcd_to_int(uint8_t i);
+
+
+static uint8_t int_to_bcd(uint8_t i)
 {
     return (i % 10) + ((i / 10) << 4);
 }
 
-static inline uint8_t bcd_to_int(uint8_t i)
-{
-    return (i & 0xF) + (i >> 4) * 10;
-}
+// static uint8_t bcd_to_int(uint8_t i)
+// {
+//     return (i & 0xF) + (i >> 4) * 10;
+// }
 
 /*
     Note: This peripheral was never released. This is a hacky software reimplementation of it that allows

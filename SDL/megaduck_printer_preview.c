@@ -1,8 +1,10 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <SDL.h>
 
 #include "Core/megaduck_laptop.h"
+#include "megaduck_printer_preview.h"
 
 bool restore_main_window_context(); // In main.c
 
@@ -26,6 +28,7 @@ static bool printer_set_context() {
 
 
 SDL_Window * MD_printer_preview_get_window(void) {
+
     return printer_window;
 }
 
@@ -39,9 +42,24 @@ void MD_printer_preview_init(int width, int height) {
                                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI); // 0);
 
         printer_gl_context = SDL_GL_CreateContext(printer_window);
-        if (printer_gl_context == NULL) return; // printer_gl_context = nogl? NULL : SDL_GL_CreateContext(printer_window);
+        if (printer_gl_context == NULL) {
+            // Fallback to SDL renderer
+            renderer = SDL_CreateRenderer(printer_window, -1, SDL_RENDERER_ACCELERATED);
 
-        renderer = SDL_CreateRenderer(printer_window, -1, 0);
+            // If hardware-accelerated rendering fails, try software rendering
+            if (!renderer)
+                renderer = SDL_CreateRenderer(printer_window, -1, SDL_RENDERER_SOFTWARE);
+
+            // If that failed then close out the printer preview window and control vars
+            if (!renderer) {
+                MD_printer_preview_cleanup();
+                return;
+            }
+        }
+        else {
+            renderer = SDL_CreateRenderer(printer_window, -1, 0);
+        }
+
         surface = SDL_CreateRGBSurface(0, width, height, 8, 0, 0, 0, 0);
 
         // Greyscale palette
@@ -50,7 +68,6 @@ void MD_printer_preview_init(int width, int height) {
             palette_8bpp[i].r = palette_8bpp[i].g = palette_8bpp[i].b = i;
 
         SDL_SetPaletteColors(surface->format->palette, palette_8bpp, 0, 256);
-
     }
     restore_main_window_context();
 }
@@ -83,11 +100,13 @@ void MD_printer_preview_update(int width, int height, uint8_t * p_src_indexed_bu
 
 void MD_printer_preview_cleanup(void) {
 
-    if (surface)        SDL_FreeSurface(surface);
-    if (renderer)       SDL_DestroyRenderer(renderer);
-    if (printer_window) SDL_DestroyWindow(printer_window);
+    if (surface)            SDL_FreeSurface(surface);
+    if (renderer)           SDL_DestroyRenderer(renderer);
+    if (printer_gl_context) SDL_GL_DeleteContext(printer_gl_context);
+    if (printer_window)     SDL_DestroyWindow(printer_window);
 
     surface = NULL;
     renderer = NULL;
+    printer_gl_context = NULL;
     printer_window = NULL;  
 }

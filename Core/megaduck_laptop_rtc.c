@@ -5,12 +5,19 @@
 
 #include "megaduck_laptop_periph.h"
 
-static inline uint8_t int_to_bcd(uint8_t i)
+#ifdef _WIN32
+    #define timegm _mkgmtime
+#endif
+
+static uint8_t int_to_bcd(uint8_t i);
+static uint8_t bcd_to_int(uint8_t i);
+
+static uint8_t int_to_bcd(uint8_t i)
 {
     return (i % 10) + ((i / 10) << 4);
 }
 
-static inline uint8_t bcd_to_int(uint8_t i)
+static uint8_t bcd_to_int(uint8_t i)
 {
     return (i & 0xF) + (i >> 4) * 10;
 }
