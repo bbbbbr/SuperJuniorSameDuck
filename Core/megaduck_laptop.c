@@ -2,12 +2,14 @@
 #include <time.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 // TODO: maybe reset ext clock send bit counter during new transmits? maybe more accurate not to. periph->ext_clk_send_bit_counter = 0;
 
 #include "megaduck_laptop_periph.h"
 
-bool cart_swap_ducklaptop();
+// In SDL/gui.c
+bool cart_swap_ducklaptop(void);
 
 
 
@@ -29,6 +31,8 @@ void MD_periph_reset(GB_megaduck_laptop_t * periph, uint8_t target_state) {
 
 
 static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph) {
+
+    bool cart_loaded;
 
     #ifdef DEBUG_LOG_DUCK_SERIAL_RX_IDLE_CMD
         GB_log(gb, "\n-> [idle] rx cmd = 0x%0X\n", periph->byte_being_received);
@@ -80,7 +84,7 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
         case MEGADUCK_SYS_CMD_RUN_CART_IN_SLOT:
             // TODO: To be closer to the actual Duck Laptop hardware the run cart command should be changed
             //       to preserve WRAM, VRAM and maybe SRAM(?)
-            bool cart_loaded = cart_swap_ducklaptop();
+            cart_loaded = cart_swap_ducklaptop();
             if (cart_loaded)
                 MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_BOOT_OK);  // TODO: Unverified if this is the response on success
             else
