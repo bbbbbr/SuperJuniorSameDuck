@@ -53,6 +53,7 @@ static uint8_t megaduck_laptop_key_modifiers = MEGADUCK_KBD_FLAGS_NONE;
 static char user_arg_mbc_string[255] = "";
 
 
+static bool matches_extension(const char * filename, const char * extension);
 static void set_duck_mbc_from_filename(const char *filename);
 static void check_attach_cli_peripherals(GB_gameboy_t *gb);
 
@@ -855,36 +856,40 @@ static void load_boot_rom(GB_gameboy_t *gb, GB_boot_rom_t type)
     // }
 }
 
+// Case insensitive
+static bool matches_extension(const char * filename, const char * extension) {
+
+    if (strlen(filename) >= strlen(extension)) {
+        const char * str_ext = filename + (strlen(filename) - strlen(extension));
+        return (strncasecmp(str_ext, extension, strlen(extension)) == 0);
+    }
+    else
+        return false;
+}
+
 // Try to obtain an mbc type based on the filename extension
 //
 // Possible return values:
 enum {
-    MBC_DUCK_NO_MATCH = 0,
     MBC_DUCK_MD0      = 0xE0,
     MBC_DUCK_MD1      = 0xE1,
     MBC_DUCK_MD2      = 0xE2,
+    MBC_DUCK_NONE     = 0x00, // Uses GB_NO_MBC
 };
 
 // Don't call this if the user forced and MBC with the CLI arg: if (strlen(user_arg_mbc_string) > 0)
 static void set_duck_mbc_from_filename(const char *filename) {
 
-    uint8_t mbc_num = MBC_DUCK_NO_MATCH;
+    bool    valid_mbc = false;
+    uint8_t mbc_num = MBC_DUCK_NONE;
 
-    size_t fname_length = strlen(filename);
-    char extension[4] = {0,};
-    if (fname_length > 4) {
-        if (filename[fname_length - 4] == '.') {
-            extension[0] = tolower((unsigned char)filename[fname_length - 3]);
-            extension[1] = tolower((unsigned char)filename[fname_length - 2]);
-            extension[2] = tolower((unsigned char)filename[fname_length - 1]);
-        }
-    }
+    if      (matches_extension(filename, (char *)".md0"))  { mbc_num = MBC_DUCK_MD0;  valid_mbc = true; }
+    else if (matches_extension(filename, (char *)".md1"))  { mbc_num = MBC_DUCK_MD1;  valid_mbc = true; }
+    else if (matches_extension(filename, (char *)".md2"))  { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; }
+    else if (matches_extension(filename, (char *)".bin"))  { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .bin
+    else if (matches_extension(filename, (char *)".duck")) { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .duck
 
-    if (strcmp(extension, "md0") == 0)      mbc_num = MBC_DUCK_MD0;
-    else if (strcmp(extension, "md1") == 0) mbc_num = MBC_DUCK_MD1;
-    else if (strcmp(extension, "md2") == 0) mbc_num = MBC_DUCK_MD2;
-
-    if (mbc_num != MBC_DUCK_NO_MATCH) {
+    if (valid_mbc) {
         GB_log(&gb, "* MBC detected from file extension: MBC = 0x%02X\n", mbc_num);
         GB_set_explicit_mbc(&gb, true, mbc_num);
     }

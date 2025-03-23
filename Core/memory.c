@@ -1056,6 +1056,9 @@ static void write_mbc(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
             }
             break;
 
+        // MegaDuck 32K with NO bank switching
+        // Uses: GB_NO_MBC
+
             nodefault;
     }
 

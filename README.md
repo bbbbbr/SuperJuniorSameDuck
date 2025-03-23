@@ -11,7 +11,21 @@ A fork of SameBoy with various patches for MegaDuck development and emulation.
   - Run Cart from ROM Slot
 - Improved MegaDuck audio accuracy
 
-Added CLI flags:
+
+### Detecting MBC by filename extension
+The emulator will attempt to identify which MBC (cart memory controller) to use based on the filename extension.
+The MBC type can also be set explicitly using the `--force-mbc` option described below (overrides file extension).
+  - `.md0`: MegaDuck MD 0
+    - Games/Programs: Laptop System ROM, Bilder Lexikon, DataBank
+  - `.md1`: MegaDuck MD 1
+    - Games: Puppet Knight, Suleiman’s Treasure
+  - `.md2`: MegaDuck MD 2
+    - Games: 2nd Space, Ant Soldiers, Armour Force, Beast Fighter, Black Forest Tale, Captain Knick Knack, Commin Five in One, Duck Adventures, Four in One, Magic Tower, Railway, Snake Roy, Worm Visitor, Zipball
+  - `.bin` / `.duck`: MegaDuck with NO MBC bank switching controller
+    - Games: Arctic Zone, Bomb Disposer, Magic Maze, Pile Wonder, Street Rider, The Brick Wall, Trap and Turn, Vex
+
+
+### Added command line options:
 - `--megaduck_laptop`: Turn on  MegaDuck Super Junior/Quique Laptop emulation and SDL keyboard support (`F12` to toggle keyboard)
   -  If running the System ROM then also use `--force-mbc 0xE0`
   - Important translated key mappings:
@@ -22,11 +36,13 @@ Added CLI flags:
   - With keyboard support enabled, use `scroll lock` or `print screen` keys to emulate print screen key.
 - `--workboy`: Turn on Workboy emulation and SDL keyboard support (`F12` to toggle keyboard)
 - `--force-mbc <hex mbc number>`: Explicitly specify which MBC to use, do not use header or other detection. Allows using MegaDuck ROMs built for Game Boy MBCs (such as MBC5) as well as avoiding heuristics for other ROMs. 
-  - `0xE0`:  MegaDuck Laptop System ROM MBC
+  - `0xE0`:  MegaDuck MD 0 (Laptop Cart and System ROM MBC)
     - 32k ROM bank size, reg addr `0x1000`, range 0-15
     - 4 x 8k plug-in cart SRAM banks, shares mbc bank switch register with ROM banks (uses Upper Nibble)
   - `0xE1`:  MegaDuck MD 1 (32K banks, rom bank switch reg addr `0xB000`, range 0-1)
-  - `0xE2`:  MegaDuck MD 2 (16k banks, rom bank switch reg addr `0x0001`, range 1-3 or 1-7)-  
+  - `0xE2`:  MegaDuck MD 2 (16k banks, rom bank switch reg addr `0x0001`, range 1-3 or 1-7)
+  - `0x00`:  MegaDuck with NO MBC bank switching controller
+  - Others: For MegaDuck games that use MBC controllers, their MBC number may be specified. It is an uncommon scenario.
 
 
 # Screenshots
