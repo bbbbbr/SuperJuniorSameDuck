@@ -1619,7 +1619,7 @@ static bool mbc(GB_gameboy_t *gb, char *arguments, char *modifiers, const debugg
                 [GB_HUC1]   = "HUC-1",
                 [GB_HUC3]   = "HUC-3",
                 [GB_CAMERA] = "MAC-GBD",
-                [DUCK_SYSROM] = "DUCK_SYSROM",
+                [DUCK_MD0] = "DUCK_MD0",
                 [DUCK_MD1] = "DUCK_MD1",
                 [DUCK_MD2] = "DUCK_MD2",
 
@@ -1627,8 +1627,8 @@ static bool mbc(GB_gameboy_t *gb, char *arguments, char *modifiers, const debugg
             GB_log(gb, "%s\n", mapper_names[cartridge->mbc_type]);
         }
 
-        if (cartridge->mbc_type == DUCK_SYSROM) {
-            GB_log(gb, "Current mapped 32K-size ROM0+X bank: %d\n", gb->duck_sysrom.rom_bank);
+        if (cartridge->mbc_type == DUCK_MD0) {
+            GB_log(gb, "Current mapped 32K-size ROM0+X bank: %d\n", gb->duck_md0.rom_bank);
             GB_log(gb, "- Below is 16K slice format -\n");
             GB_log(gb, "Current mapped ROM0 bank: %x\n", gb->mbc_rom0_bank);
         }

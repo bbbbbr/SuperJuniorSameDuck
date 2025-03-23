@@ -50,8 +50,11 @@ static uint8_t peripheral_modifier_state = 0;
 static bool workboy_enabled = false;
 static bool megaduck_laptop_enabled = false;
 static uint8_t megaduck_laptop_key_modifiers = MEGADUCK_KBD_FLAGS_NONE;
-static char mbc_string[255] = "";
+static char user_arg_mbc_string[255] = "";
 
+
+static void set_duck_mbc_from_filename(const char *filename);
+static void check_attach_cli_peripherals(GB_gameboy_t *gb);
 
 // For temporary transfer of context to the printer window
 bool restore_main_window_context(void) {
@@ -68,6 +71,7 @@ bool uses_gl(void)
     return gl_context;
 }
 
+// Gets called from Drag and Drop file & ROM load dialog
 void set_filename(const char *new_filename, typeof(free) *new_free_function)
 {
     if (filename && free_function) {
@@ -851,12 +855,52 @@ static void load_boot_rom(GB_gameboy_t *gb, GB_boot_rom_t type)
     // }
 }
 
+// Try to obtain an mbc type based on the filename extension
+//
+// Possible return values:
+enum {
+    MBC_DUCK_NO_MATCH = 0,
+    MBC_DUCK_MD0      = 0xE0,
+    MBC_DUCK_MD1      = 0xE1,
+    MBC_DUCK_MD2      = 0xE2,
+};
+
+// Don't call this if the user forced and MBC with the CLI arg: if (strlen(user_arg_mbc_string) > 0)
+static void set_duck_mbc_from_filename(const char *filename) {
+
+    uint8_t mbc_num = MBC_DUCK_NO_MATCH;
+
+    size_t fname_length = strlen(filename);
+    char extension[4] = {0,};
+    if (fname_length > 4) {
+        if (filename[fname_length - 4] == '.') {
+            extension[0] = tolower((unsigned char)filename[fname_length - 3]);
+            extension[1] = tolower((unsigned char)filename[fname_length - 2]);
+            extension[2] = tolower((unsigned char)filename[fname_length - 1]);
+        }
+    }
+
+    if (strcmp(extension, "md0") == 0)      mbc_num = MBC_DUCK_MD0;
+    else if (strcmp(extension, "md1") == 0) mbc_num = MBC_DUCK_MD1;
+    else if (strcmp(extension, "md2") == 0) mbc_num = MBC_DUCK_MD2;
+
+    if (mbc_num != MBC_DUCK_NO_MATCH) {
+        GB_log(&gb, "* MBC detected from file extension: MBC = 0x%02X\n", mbc_num);
+        GB_set_explicit_mbc(&gb, true, mbc_num);
+    }
+}
+
 
 // MegaDuck: This needs to happen after GB_init(), GB_reset_internal() and GB_reset() so overrides don't get wiped out
 static void check_attach_cli_peripherals(GB_gameboy_t *gb) {
-    if (strlen(mbc_string) > 0) {
-        GB_set_forced_mbc(gb, true, (uint8_t)strtol(mbc_string, NULL, 16));
+
+    if (strlen(user_arg_mbc_string) > 0) {
+        GB_log(gb, "* MBC forced from CLI arg: MBC = 0x%02X\n", (uint8_t)strtol(user_arg_mbc_string, NULL, 16));
+        GB_set_explicit_mbc(gb, true, (uint8_t)strtol(user_arg_mbc_string, NULL, 16));
+    } else {
+        set_duck_mbc_from_filename(filename);
     }
+
 
     if (workboy_enabled) {
         GB_connect_workboy(gb, (GB_workboy_set_time_callback)NULL, (GB_workboy_get_time_callback)NULL);
@@ -1213,7 +1257,7 @@ int main(int argc, char **argv)
 
     const char *force_mbc_string = get_arg_option("--force-mbc", &argc, argv);
     if (NULL != force_mbc_string) {
-        snprintf(mbc_string, sizeof(mbc_string), "%s", force_mbc_string);
+        snprintf(user_arg_mbc_string, sizeof(user_arg_mbc_string), "%s", force_mbc_string);
     }
     workboy_enabled         = get_arg_flag("--workboy", &argc, argv);
     megaduck_laptop_enabled = get_arg_flag("--megaduck_laptop", &argc, argv);

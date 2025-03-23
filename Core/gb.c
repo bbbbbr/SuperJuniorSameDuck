@@ -252,7 +252,7 @@ void GB_dealloc(GB_gameboy_t *gb)
     free(gb);
 }
 
-void GB_set_forced_mbc(GB_gameboy_t *gb, bool on, uint8_t mbc_num)
+void GB_set_explicit_mbc(GB_gameboy_t *gb, bool on, uint8_t mbc_num)
 {
     gb->forced_mbc = on;
     gb->forced_mbc_num = mbc_num;

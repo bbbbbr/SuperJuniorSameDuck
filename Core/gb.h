@@ -645,7 +645,7 @@ struct GB_gameboy_internal_s {
             struct {
                 uint8_t rom_bank;
                 uint8_t ram_bank;
-            } duck_sysrom;  // MBC 0xE0
+            } duck_md0;  // MBC 0xE0
 
             struct {
                 uint8_t rom_bank;
@@ -1068,7 +1068,7 @@ GB_registers_t *GB_get_registers(GB_gameboy_t *gb);
 void *GB_get_user_data(GB_gameboy_t *gb);
 void GB_set_user_data(GB_gameboy_t *gb, void *data);
 
-void GB_set_forced_mbc(GB_gameboy_t *gb, bool on, uint8_t mbc_num);
+void GB_set_explicit_mbc(GB_gameboy_t *gb, bool on, uint8_t mbc_num);
 int GB_load_boot_rom(GB_gameboy_t *gb, const char *path);
 void GB_load_boot_rom_from_buffer(GB_gameboy_t *gb, const unsigned char *buffer, size_t size);
 int GB_load_rom(GB_gameboy_t *gb, const char *path);

@@ -16,7 +16,7 @@ typedef struct {
         GB_TPP1,
         GB_CAMERA,
         // Mega Duck
-        DUCK_SYSROM,
+        DUCK_MD0,
         DUCK_MD1,
         DUCK_MD2,
     } mbc_type;

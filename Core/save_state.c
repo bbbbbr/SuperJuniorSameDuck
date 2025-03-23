@@ -272,7 +272,7 @@ static size_t bess_size_for_cartridge(const GB_cartridge_t *cart)
 
         // MegaDuck
         // Seems to be referring to the number of registers in the MBC itself to store
-        case DUCK_SYSROM:
+        case DUCK_MD0:
             return sizeof(BESS_block_t) + 1 * sizeof(BESS_MBC_pair_t);
         case DUCK_MD1:
             return sizeof(BESS_block_t) + 1 * sizeof(BESS_MBC_pair_t);
@@ -533,11 +533,11 @@ static int save_bess_mbc_block(GB_gameboy_t *gb, virtual_file_t *file)
             break;
 
         // MegaDuck
-        case DUCK_SYSROM:
+        case DUCK_MD0:
             // Save/restore seems to revolve around replaying register writes(?)
             // For the System ROM there is a shared MBC write address split between
             // hi/lo nybbles for RAM / ROM bank address
-            pairs[1] = (BESS_MBC_pair_t){LE16(0x1000), gb->duck_sysrom.rom_bank | (gb->duck_sysrom.ram_bank << 4)};
+            pairs[1] = (BESS_MBC_pair_t){LE16(0x1000), gb->duck_md0.rom_bank | (gb->duck_md0.ram_bank << 4)};
             mbc_block.size = 1 * sizeof(pairs[0]);
             break;
         case DUCK_MD1:
