@@ -1,15 +1,18 @@
 
-# SuperJuniorSameDuck: 
-This is a work in progress! Mainly driven by development and testing needs.
+# SuperJuniorSameDuck:
+A fork of [SameBoy](https://github.com/LIJI32/SameBoy) with various patches for MegaDuck research, development and emulation (priorities in that order).
 
-A fork of SameBoy with various patches for MegaDuck development and emulation.
-- Adds support for the MegaDuck Super Junior/Quique Laptop
-  - Keyboard
-  - RTC
-  - Printers (Single and Double Pass)
-  - SRAM Cart
-  - Run Cart from ROM Slot
-- Improved MegaDuck audio accuracy
+![Bilder Databank ROM Cart running](/info/megaduck_databank.png)
+
+### Features
+At present it's the only emulator with support for the MegaDuck Super Junior/Quique Laptop hardware. This support was implemented based on [disassembly of the laptop system ROM](https://github.com/bbbbbr/megaduck-quique-disasm) and other research.
+- Keyboard
+- RTC
+- Printers (Single and Double Pass)
+- SRAM Cart
+- Run Cart from ROM Slot
+
+And one of very few emulators with (seemingly) all audio registers correctly supported.
 
 
 ### Detecting MBC by filename extension
@@ -48,7 +51,6 @@ The MBC type can also be set explicitly using the `--force-mbc` option described
 # Screenshots
 ![Spanish MegaDuck Laptop Super QuiQue System ROM running](/info/megaduck_systemrom_spanish.png)
 ![Bilder Lexikon ROM Cart running](/info/megaduck_bilderlexikon.png)
-![Bilder Databank ROM Cart running](/info/megaduck_databank.png)
 ![Duck Duck Wordyl printout](/info/megaduck_wordyl_printout.png)
 ![DataBank Printout](/info/megaduck_databank_printout.png)
 
