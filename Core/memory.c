@@ -1025,39 +1025,34 @@ static void write_mbc(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
             }
             break;
 
+        // MegaDuck
         case DUCK_MD0:
-            switch (addr & 0xF000) {                
-                case 0x1000:
-                    #ifdef DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
-                        GB_log(gb, "Duck SYSROM MBC Write: 0x%04X <- 0x%02X (32kBank:0x%02X PC=0x%04X)", addr, value, gb->duck_md0.rom_bank, gb->pc);
-                    #endif
-                    // Not yet clear whether SRAM requires an enable of some kind
-                    // but it is always read after a MBC bank write.
-                    // So for now treat it as enabled once there is any mbc write.
-                    gb->mbc_ram_enable = true;
-                    // MBC write seems to be split like this:
-                    // Cart ROM bank:  Lower nybble (0-15)
-                    // Cart SRAM bank: Upper nybble (0-3)
-                    gb->duck_md0.rom_bank  =  value & 0x0F;
-                    gb->duck_md0.ram_bank  = (value & 0x30) >> 4;
-                    write_handled = true;
-                    #ifdef DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
-                        GB_log(gb, "  [ROM=%d, SRAM=%d]\n", gb->duck_md0.rom_bank, gb->duck_md0.ram_bank);
-                    #endif
-                    break;
+            if (addr == 0x1000) {
+                #ifdef DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
+                    GB_log(gb, "Duck SYSROM MBC Write: 0x%04X <- 0x%02X (32kBank:0x%02X PC=0x%04X)", addr, value, gb->duck_md0.rom_bank, gb->pc);
+                #endif
+                // Not yet clear whether SRAM requires an enable of some kind
+                // but it is always read after a MBC bank write.
+                // So for now treat it as enabled once there is any mbc write.
+                gb->mbc_ram_enable = true;
+                // MBC write seems to be split like this:
+                // Cart ROM bank:  Lower nybble (0-15)
+                // Cart SRAM bank: Upper nybble (0-3)
+                gb->duck_md0.rom_bank  =  value & 0x0F;
+                gb->duck_md0.ram_bank  = (value & 0x30) >> 4;
+                write_handled = true;
+                #ifdef DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
+                    GB_log(gb, "  [ROM=%d, SRAM=%d]\n", gb->duck_md0.rom_bank, gb->duck_md0.ram_bank);
+                #endif
             }
             break;
 
-        // MegaDuck
-        case DUCK_MD1:
-            switch (addr & 0xF000) {
-                case 0xB000: gb->duck_md1.rom_bank  = value; write_handled = true; break;
-            }
-            break;
+        // case DUCK_MD1:
+        // See write_mbc_ram()
 
         case DUCK_MD2:
-            switch (addr & 0x0001) {
-                case 0x0001: gb->duck_md2.rom_bank  = value; write_handled = true; break;
+            if (addr == 0x0001) {
+                gb->duck_md2.rom_bank  = value; write_handled = true;
             }
             break;
 
@@ -1291,6 +1286,30 @@ static void write_mbc7_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
 
 static void write_mbc_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
 {
+    GB_update_mbc_mappings(gb);
+    if (gb->cartridge_type->mbc_type == DUCK_MD1) {
+        if (addr == 0xB000) {
+            gb->duck_md1.rom_bank  = value;
+            GB_update_mbc_mappings(gb);
+        }
+        return;
+    }
+
+    if (gb->cartridge_type->mbc_type == DUCK_MD0) {
+        // TODO: DUCK: Does it require SRAM enable? There is some weird switching to 
+        // same ROM bank in the access code, but unclear if that's just quirky coding
+        //
+        // Duck laptop memory card appears to have SRAM Banks
+        #ifdef DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
+            GB_log(gb, "Duck Laptop: SRAM Write 0x%2x to   0x%4x (32kBank:0x%02X PC=0x%04X)\n", addr, value,gb->duck_md0.rom_bank, gb->pc);
+        #endif
+
+        // TODO: DUCK: This is similar enough now to regular mbc sram read code that regular code could be used to handle it, esp with SRAM enable being set to on
+        gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)] = value;
+        return;
+    }
+
+
     if (gb->cartridge_type->mbc_type == GB_MBC7) {
         write_mbc7_ram(gb, addr, value);
         return;
@@ -1317,20 +1336,6 @@ static void write_mbc_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
         }
     }
     
-    if (gb->cartridge_type->mbc_type == DUCK_MD0) {
-        // TODO: DUCK: Does it require SRAM enable? There is some weird switching to 
-        // same ROM bank in the access code, but unclear if that's just quirky coding
-        //
-        // Duck laptop memory card appears to have SRAM Banks
-        #ifdef DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
-            GB_log(gb, "Duck Laptop: SRAM Write 0x%2x to   0x%4x (32kBank:0x%02X PC=0x%04X)\n", addr, value,gb->duck_md0.rom_bank, gb->pc);
-        #endif
-
-        // TODO: DUCK: This is similar enough now to regular mbc sram read code that regular code could be used to handle it, esp with SRAM enable being set to on
-        gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)] = value;
-        return;
-    }
-
     if ((!gb->mbc_ram_enable)
        && gb->cartridge_type->mbc_type != GB_HUC1) return;
     
