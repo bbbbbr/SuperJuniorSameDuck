@@ -28,6 +28,7 @@
 #include <fcntl.h>
 #else
 #include <Windows.h>
+#define strncasecmp(a,b,c) _strnicmp(a,b,c)
 #endif
 
 static bool stop_on_start = false;
