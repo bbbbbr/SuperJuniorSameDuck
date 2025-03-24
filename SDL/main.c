@@ -335,6 +335,12 @@ static void handle_events(GB_gameboy_t *gb)
                         MD_printer_preview_cleanup();
                         // Make sure context is restored to main window
                         restore_main_window_context();
+                    } else {
+                        // If it's the main window then also close the printer window
+                        MD_printer_preview_cleanup();
+                        // Then queue exit from main window since this seems to
+                        // get lost when the printer window has to be closed
+                        pending_command = GB_SDL_QUIT_COMMAND;
                     }
                 }
                 break;
