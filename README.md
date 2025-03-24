@@ -17,9 +17,10 @@ And one of very few emulators with (seemingly) all audio registers correctly sup
 
 ### Detecting MBC by filename extension
 The emulator will attempt to identify which MBC (cart memory controller) to use based on the filename extension.
-The MBC type can also be set explicitly using the `--force-mbc` option described below (overrides file extension).
+The MBC type can also be set explicitly using the `--force-mbc` option (overrides file extension).
   - `.md0`: MegaDuck MD 0
     - Games/Programs: Laptop System ROM, Bilder Lexikon, DataBank
+      - These are all laptop programs which require `--megaduck_laptop` to run    
   - `.md1`: MegaDuck MD 1
     - Games: Puppet Knight, Suleiman’s Treasure
   - `.md2`: MegaDuck MD 2
