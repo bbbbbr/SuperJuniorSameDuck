@@ -1265,11 +1265,11 @@ int main(int argc, char **argv)
         snprintf(user_arg_mbc_string, sizeof(user_arg_mbc_string), "%s", force_mbc_string);
     }
     workboy_enabled         = get_arg_flag("--workboy", &argc, argv);
-    megaduck_laptop_enabled = get_arg_flag("--megaduck_laptop", &argc, argv);
+    megaduck_laptop_enabled = get_arg_flag("--duck-laptop", &argc, argv);
     
-    if (get_arg_flag("--duck_printer_1pass", &argc, argv))
+    if (get_arg_flag("--duck-printer-1pass", &argc, argv))
         MD_printer_connect(MEGADUCK_PRINTER_TYPE_1_PASS);
-    else if (get_arg_flag("--duck_printer_2pass", &argc, argv))
+    else if (get_arg_flag("--duck-printer-2pass", &argc, argv))
         MD_printer_connect(MEGADUCK_PRINTER_TYPE_2_PASS);
 
     const char *model_string = get_arg_option("--model", &argc, argv);
@@ -1279,13 +1279,13 @@ int main(int argc, char **argv)
 
 
     if (workboy_enabled && megaduck_laptop_enabled) {
-        fprintf(stderr, "Cannot have \"--workboy\" and \"--megaduck_laptop\" enabled at the same time\n");
+        fprintf(stderr, "Cannot have \"--workboy\" and \"--duck-laptop\" enabled at the same time\n");
         exit(1);
     }
 
     if (argc > 2 || (argc == 2 && argv[1][0] == '-')) {
         fprintf(stderr, "Super Junior SameDuck v" GB_VERSION "\n");
-        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy | --megaduck_laptop] [--duck_printer_1pass | --duck_printer_2pass] <rom>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy | --duck-laptop] [--duck-printer-1pass | --duck-printer-2pass] <rom>\n", argv[0]);
         exit(1);
     }
 

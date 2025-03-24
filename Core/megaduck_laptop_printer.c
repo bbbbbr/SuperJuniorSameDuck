@@ -148,7 +148,7 @@ uint8_t MD_printer_init(GB_megaduck_laptop_t * periph) {
     }
     else {
         printf("- MD_printer_init REJECTED: No printer connected.\n"
-               "  try --duck_printer_1pass or --duck_printer_2pass\n");
+               "  try --duck-printer-1pass or --duck-printer-2pass\n");
         printer_reply = PRINTER_INIT_FAIL;
     }
 

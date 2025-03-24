@@ -1,5 +1,5 @@
 
-# SuperJuniorSameDuck:
+# SuperJuniorSameDuck Emulator
 A fork of [SameBoy](https://github.com/LIJI32/SameBoy) with various patches for MegaDuck research, development and emulation (priorities in that order).
 
 ![Bilder Databank ROM Cart running](/info/megaduck_databank.png)
@@ -15,12 +15,12 @@ At present it's the only emulator with support for the MegaDuck Super Junior/Qui
 And one of very few emulators with (seemingly) all audio registers correctly supported.
 
 
-### Detecting MBC by filename extension
+### Detecting MBC by Filename Extension
 The emulator will attempt to identify which MBC (cart memory controller) to use based on the filename extension.
 The MBC type can also be set explicitly using the `--force-mbc` option (overrides file extension).
   - `.md0`: MegaDuck MD 0
     - Games/Programs: Laptop System ROM, Bilder Lexikon, DataBank
-      - These are all laptop programs which require `--megaduck_laptop` to run    
+      - These are all laptop programs which require `--duck-laptop` to run
   - `.md1`: MegaDuck MD 1
     - Games: Puppet Knight, Suleiman’s Treasure
   - `.md2`: MegaDuck MD 2
@@ -30,13 +30,13 @@ The MBC type can also be set explicitly using the `--force-mbc` option (override
 
 
 ### Added command line options:
-- `--megaduck_laptop`: Turn on  MegaDuck Super Junior/Quique Laptop emulation and SDL keyboard support (`F12` to toggle keyboard)
+- `--duck-laptop`: Turn on  MegaDuck Super Junior/Quique Laptop emulation and SDL keyboard support (`F12` to toggle keyboard)
   -  If running the System ROM then also use `--force-mbc 0xE0`
   - Important translated key mappings:
     - `CTRL + F1-F10`: Sharp piano keys, (``CTRL + `,1-10,-,=,Backspace``): Primary piano keys
     - `Tab`: Help key
     - `Scroll Lock`: Printscreen key
-- `--duck_printer_1pass` or `--duck_printer_2pass`: Turn on MegaDuck printer emulation
+- `--duck-printer-1pass` or `--duck-printer-2pass`: Turn on MegaDuck printer emulation
   - With keyboard support enabled, use `scroll lock` or `print screen` keys to emulate print screen key.
 - `--workboy`: Turn on Workboy emulation and SDL keyboard support (`F12` to toggle keyboard)
 - `--force-mbc <hex mbc number>`: Explicitly specify which MBC to use, do not use header or other detection. Allows using MegaDuck ROMs built for Game Boy MBCs (such as MBC5) as well as avoiding heuristics for other ROMs. 

@@ -7,12 +7,12 @@ By: bbbbbr
 
 
 ### Example command line to start the emulator with:
-- The two-pass printer connected: `--duck_printer_2pass`
-- The MegaDuck Laptop model: `--megaduck_laptop`
+- The two-pass printer connected: `--duck-printer-2pass`
+- The MegaDuck Laptop model: `--duck-laptop`
 - The Spanish Laptop System ROM (md0 extension sets MBC): megaduck_laptop_systemrom_spanish.md0
 
 Command line:
-superjunior_sameduck --duck_printer_2pass --megaduck_laptop megaduck_laptop_systemrom_spanish.md0
+superjunior_sameduck --duck-printer-2pass --duck-laptop megaduck_laptop_systemrom_spanish.md0
 
 
 Once running, press the "F12" key to turn on the SDL keyboard emulation support.
@@ -28,7 +28,7 @@ The emulator will attempt to identify which MBC (cart memory controller) to use 
 The MBC type can also be set explicitly using the `--force-mbc` option (overrides file extension).
   - `.md0`: MegaDuck MD 0
     - Games/Programs: Laptop System ROM, Bilder Lexikon, DataBank
-      - These are all laptop programs which require `--megaduck_laptop` to run
+      - These are all laptop programs which require `--duck-laptop` to run
   - `.md1`: MegaDuck MD 1
     - Games: Puppet Knight, Suleiman’s Treasure
   - `.md2`: MegaDuck MD 2
