@@ -1272,12 +1272,23 @@ int main(int argc, char **argv)
         snprintf(user_arg_mbc_string, sizeof(user_arg_mbc_string), "%s", force_mbc_string);
     }
     workboy_enabled         = get_arg_flag("--workboy", &argc, argv);
-    megaduck_laptop_enabled = get_arg_flag("--duck-laptop", &argc, argv);
+    megaduck_laptop_enabled = !get_arg_flag("--duck-handheld", &argc, argv);
     
-    if (get_arg_flag("--duck-printer-1pass", &argc, argv))
-        MD_printer_connect(MEGADUCK_PRINTER_TYPE_1_PASS);
-    else if (get_arg_flag("--duck-printer-2pass", &argc, argv))
-        MD_printer_connect(MEGADUCK_PRINTER_TYPE_2_PASS);
+    if (get_arg_flag("--duck-printer-1pass", &argc, argv)) {
+        if (megaduck_laptop_enabled == false) {
+            fprintf(stderr, "Cannot use \"--duck-printer-1pass\" when \"--duck-handheld\" is specified\n");
+            exit(1);
+        } else
+            MD_printer_connect(MEGADUCK_PRINTER_TYPE_1_PASS);
+    }
+    else if (get_arg_flag("--duck-printer-2pass", &argc, argv)) {
+        if (megaduck_laptop_enabled == false) {
+            fprintf(stderr, "Cannot use \"--duck-printer-2pass\" when \"--duck-handheld\" is specified\n");
+            exit(1);
+        }
+        else
+            MD_printer_connect(MEGADUCK_PRINTER_TYPE_2_PASS);
+    }
 
     const char *model_string = get_arg_option("--model", &argc, argv);
     bool fullscreen = get_arg_flag("--fullscreen", &argc, argv) || get_arg_flag("-f", &argc, argv);
@@ -1286,13 +1297,13 @@ int main(int argc, char **argv)
 
 
     if (workboy_enabled && megaduck_laptop_enabled) {
-        fprintf(stderr, "Cannot have \"--workboy\" and \"--duck-laptop\" enabled at the same time\n");
+        fprintf(stderr, "Cannot have \"--workboy\" Duck Laptop enabled at the same time (try adding \"--duck-handheld\" to turn off laptop)\n");
         exit(1);
     }
 
     if (argc > 2 || (argc == 2 && argv[1][0] == '-')) {
         fprintf(stderr, "Super Junior SameDuck v" GB_VERSION "\n");
-        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy | --duck-laptop] [--duck-printer-1pass | --duck-printer-2pass] <rom>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy] [--duck-handheld] [--duck-printer-1pass | --duck-printer-2pass] <rom>\n", argv[0]);
         exit(1);
     }
 
