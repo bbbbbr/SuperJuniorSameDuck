@@ -1,5 +1,5 @@
 
-# SuperJuniorSameDuck Emulator
+# Super Junior SameDuck Emulator
 A fork of [SameBoy](https://github.com/LIJI32/SameBoy) with various patches for MegaDuck research, development and emulation (priorities in that order).
 
 ![Bilder Databank ROM Cart running](/info/megaduck_databank.png)
