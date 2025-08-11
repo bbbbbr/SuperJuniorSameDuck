@@ -139,12 +139,11 @@ uint8_t MD_printer_init(GB_megaduck_laptop_t * periph) {
         
         // The system ROM sends a query/init printer command on startup,
         // don't show the preview window until 2+ commands have come in.
+        printer_reply = PRINTER_INIT_OK | printer.type;
         printer.init_cmd_count++;
-        printf("- MD_printer_init #%d\n", printer.init_cmd_count);
+        printf("- MD_printer_init #%d = %d\n", printer.init_cmd_count, printer_reply);
         if (printer.init_cmd_count >= INIT_COUNT_THRESHOLD_SHOW_PREVIEW)
             MD_printer_open_preview();
-
-        printer_reply = PRINTER_INIT_OK | printer.type;
     }
     else {
         printf("- MD_printer_init REJECTED: No printer connected.\n"

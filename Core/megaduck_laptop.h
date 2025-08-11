@@ -45,7 +45,11 @@
 // #define DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
 // #define DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
 
+// #define DEBUG_LOG_DUCK_PRINTER_TIMING
+
 #define MEGADUCK_BUF_SZ  256
+
+#define T_STATES_PER_MSEC 4194.304
 
 
 // Used in printer init reply
@@ -126,7 +130,7 @@ enum {
     // Post-init default state
     MEGADUCK_SYS_STATE_INIT_OK_READY,
     // Command reply states
-    MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO,
+    MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_EXT_IO,
     // Multi-byte receive states
     MEGADUCK_SYS_STATE_CMD_SET_RTC,                   // External Clock (partial)
     MEGADUCK_SYS_STATE_GET_RTC_TX,                    // External Clock

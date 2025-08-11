@@ -17,6 +17,12 @@ bool cart_swap_ducklaptop(void);
 //
 // 8192 Hz / 8 bits = 1024 Bytes per second / 1000 msec = 1.024 msec per byte
 
+#ifdef DEBUG_LOG_DUCK_PRINTER_TIMING
+    static void MD_log_printer_timing(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph) {
+        GB_log(gb, "-> elapsed: (%0.2f msec)\n", 
+               (float)(MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE - periph->t_states_print_done_timeout) / T_STATES_PER_MSEC);
+    }
+#endif
 
 void MD_periph_reset(GB_megaduck_laptop_t * periph, uint8_t target_state) {
     periph->state                    = MEGADUCK_SYS_STATE_INIT_1_WAIT_RX_COUNTER;
@@ -44,7 +50,7 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             periph->t_states_print_done_timeout = MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE;
             // Bit.1 indicates printer type (1 = single pass large buffer, 0 = two pass small buffer)
             // So maybe 0x01 = 2 pass printing, 0x03 = 1 pass printing
-            periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO;
+            periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_EXT_IO;
             MD_send_buf_enqueue(periph, MD_printer_init(periph)); // MEGADUCK_SYS_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO
             MD_send_buf_finalize_and_transmit(periph);
             break;
@@ -65,6 +71,10 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             break;
 
         case MEGADUCK_SYS_CMD_PRINT_SEND_BYTES:
+            #ifdef DEBUG_LOG_DUCK_PRINTER_TIMING
+                GB_log(gb, "* CMD_PRINT_SEND_BYTES: ");
+                MD_log_printer_timing(gb, periph);
+            #endif
             // Try to heuristically re-open the printer window if needed (but only when useful)
             if (periph->t_states_print_done_timeout <= MEGADUCK_LAPTOP_PRINT_DONE_IDLE) {
                 MD_printer_init(periph);
@@ -150,6 +160,10 @@ static void handle_received_byte(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             break;
 
         case MEGADUCK_SYS_STATE_PRINT_SEND_BULK_RX:
+            #ifdef DEBUG_LOG_DUCK_PRINTER_TIMING
+                GB_log(gb, "* PRINT_SEND_BULK_RX: ");
+                MD_log_printer_timing(gb, periph);
+            #endif            
             // Log printer as still active, and transfer byte to it
             periph->t_states_print_done_timeout = MEGADUCK_LAPTOP_PRINT_DONE_STILL_ACTIVE;
             MD_printer_process_bulk_data(periph);
@@ -350,7 +364,7 @@ void GB_megaduck_laptop_peripheral_update(GB_gameboy_t *gb, uint8_t cycles) {
                         periph->state = MEGADUCK_SYS_STATE_INIT_5_WAIT_TX_COUNT_ACK;
                         break;
 
-                    case MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_MAYBE_EXT_IO:
+                    case MEGADUCK_SYS_STATE_REPLY_CMD_PRINT_INIT_EXT_IO:
                         // Return to initialized ready waiting state
                         periph->state = MEGADUCK_SYS_STATE_INIT_OK_READY;
                         break;
