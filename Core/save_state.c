@@ -542,11 +542,13 @@ static int save_bess_mbc_block(GB_gameboy_t *gb, virtual_file_t *file)
             break;
         case DUCK_MD1:
             pairs[1] = (BESS_MBC_pair_t){LE16(0xB000), gb->duck_md1.rom_bank};
-            mbc_block.size = 1 * sizeof(pairs[0]);
+            pairs[2] = (BESS_MBC_pair_t){LE16(0x1000), gb->duck_md1.ram_bank};
+            mbc_block.size = 2 * sizeof(pairs[0]);
             break;
         case DUCK_MD2:
             pairs[1] = (BESS_MBC_pair_t){LE16(0x0001), gb->duck_md2.rom_bank};
-            mbc_block.size = 1 * sizeof(pairs[0]);
+            pairs[2] = (BESS_MBC_pair_t){LE16(0x1000), gb->duck_md2.ram_bank};
+            mbc_block.size = 2 * sizeof(pairs[0]);
             break;
     }
     

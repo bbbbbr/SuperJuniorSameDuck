@@ -649,10 +649,12 @@ struct GB_gameboy_internal_s {
 
             struct {
                 uint8_t rom_bank;
+                uint8_t ram_bank;  // Only available on laptop model if SRAM cart is plugged in
             } duck_md1;  // MBC 0xE1
 
             struct {
                 uint8_t rom_bank;
+                uint8_t ram_bank;  // Only available on laptop model if SRAM cart is plugged in
             } duck_md2;  // MBC 0xE2
 
         };
@@ -974,6 +976,7 @@ struct GB_gameboy_internal_s {
         bool forced_mbc;
         uint8_t  forced_mbc_num;
         uint16_t use_megaduck_laptop_initial_sp;
+        bool duck_laptop_sram_cart_present;
                
         /* Temporary state */
         bool wx_just_changed;
@@ -1069,6 +1072,7 @@ void *GB_get_user_data(GB_gameboy_t *gb);
 void GB_set_user_data(GB_gameboy_t *gb, void *data);
 
 void GB_set_explicit_mbc(GB_gameboy_t *gb, bool on, uint8_t mbc_num);
+void GB_enable_laptop_sram_cart(GB_gameboy_t *gb);
 int GB_load_boot_rom(GB_gameboy_t *gb, const char *path);
 void GB_load_boot_rom_from_buffer(GB_gameboy_t *gb, const unsigned char *buffer, size_t size);
 int GB_load_rom(GB_gameboy_t *gb, const char *path);

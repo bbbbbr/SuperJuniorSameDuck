@@ -50,6 +50,7 @@ static bool peripheral_text_input_mode = false;
 static uint8_t peripheral_modifier_state = 0;
 static bool workboy_enabled = false;
 static bool megaduck_laptop_enabled = false;
+static bool user_arg_duck_laptop_sram_cart_present = false;
 static uint8_t megaduck_laptop_key_modifiers = MEGADUCK_KBD_FLAGS_NONE;
 static char user_arg_mbc_string[255] = "";
 
@@ -906,13 +907,17 @@ static void set_duck_mbc_from_filename(const char *filename) {
 // MegaDuck: This needs to happen after GB_init(), GB_reset_internal() and GB_reset() so overrides don't get wiped out
 static void check_attach_cli_peripherals(GB_gameboy_t *gb) {
 
+    if (user_arg_duck_laptop_sram_cart_present) {
+        GB_log(gb, "* Laptop SRAM Cart enabled by cli\n");
+        GB_enable_laptop_sram_cart(gb);
+    }
+
     if (strlen(user_arg_mbc_string) > 0) {
         GB_log(gb, "* MBC forced from CLI arg: MBC = 0x%02X\n", (uint8_t)strtol(user_arg_mbc_string, NULL, 16));
         GB_set_explicit_mbc(gb, true, (uint8_t)strtol(user_arg_mbc_string, NULL, 16));
     } else {
         set_duck_mbc_from_filename(filename);
     }
-
 
     if (workboy_enabled) {
         GB_connect_workboy(gb, (GB_workboy_set_time_callback)NULL, (GB_workboy_get_time_callback)NULL);
@@ -1290,6 +1295,14 @@ int main(int argc, char **argv)
             MD_printer_connect(MEGADUCK_PRINTER_TYPE_2_PASS);
     }
 
+    if (get_arg_flag("--duck-sram-cart", &argc, argv)) {
+        if (megaduck_laptop_enabled == false) {
+            fprintf(stderr, "Cannot use \"--duck-sram-cart\" when \"--duck-handheld\" is specified\n");
+            exit(1);
+        } else
+            user_arg_duck_laptop_sram_cart_present = true;
+    }
+
     const char *model_string = get_arg_option("--model", &argc, argv);
     bool fullscreen = get_arg_flag("--fullscreen", &argc, argv) || get_arg_flag("-f", &argc, argv);
     bool nogl = get_arg_flag("--nogl", &argc, argv);
@@ -1303,7 +1316,7 @@ int main(int argc, char **argv)
 
     if (argc > 2 || (argc == 2 && argv[1][0] == '-')) {
         fprintf(stderr, "Super Junior SameDuck v" GB_VERSION "\n");
-        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy] [--duck-handheld] [--duck-printer-1pass | --duck-printer-2pass] <rom>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [--fullscreen|-f] [--nogl] [--stop-debugger|-s] [--model <model>] [--force-mbc <hex mbc number>] [--workboy] [--duck-handheld] [--duck-printer-1pass | --duck-printer-2pass] [--duck-sram-cart] <rom>\n", argv[0]);
         exit(1);
     }
 

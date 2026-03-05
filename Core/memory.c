@@ -404,15 +404,21 @@ static uint8_t read_mbc_ram(GB_gameboy_t *gb, uint16_t addr)
         }
     }
     else if (gb->cartridge_type->mbc_type == DUCK_MD0) {
-        // TODO: DUCK: Does it require SRAM enable? There is some weird switching to 
-        // same ROM bank in the access code, but unclear if that's just quirky coding
+        // No enable required for Duck SRAM cart
+        // TODO: There is some weird switching to same ROM bank in the access code, but unclear if that's just quirky coding
         //
-        // Duck laptop memory card appears to have SRAM Banks
+        // Duck laptop memory card has SRAM Banks
         #ifdef DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
             GB_log(gb, "Duck Laptop: SRAM Read  0x%2x from 0x%4x (32kBank:0x%02X PC=0x%04X)\n", addr, gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)],
                                                                                                 gb->duck_md0.rom_bank, gb->pc);
         #endif
-        // TODO: DUCK: This is similar enough now to regular mbc sram read code that regular code could be used to handle it, esp with SRAM enable being set to on
+        return gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)];
+    }
+    else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_laptop_sram_cart_present) {
+        #ifdef DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
+            GB_log(gb, "Duck Laptop: SRAM Read  0x%2x from 0x%4x (32kBank:0x%02X PC=0x%04X)\n", addr, gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)],
+                                                                                                gb->duck_md0.rom_bank, gb->pc);
+        #endif
         return gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)];
     }
     else if ((!gb->mbc_ram_enable) &&
@@ -1047,12 +1053,34 @@ static void write_mbc(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
             }
             break;
 
-        // case DUCK_MD1:
-        // See write_mbc_ram()
+        case DUCK_MD1:
+            // For ROM bank register access see: See write_mbc_ram()
+
+            if ((addr == 0x1000) && gb->duck_laptop_sram_cart_present) {
+                // Cart SRAM bank: Upper nybble (0-3)
+                gb->mbc_ram_enable = true;
+                gb->duck_md1.ram_bank  = (value & 0x30) >> 4;
+                write_handled = true;
+                #ifdef DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
+                    GB_log(gb, "  [ROM=%d, SRAM=%d]\n", gb->duck_md1.rom_bank, gb->duck_md1.ram_bank);
+                #endif
+            }
+            break;
 
         case DUCK_MD2:
             if (addr == 0x0001) {
-                gb->duck_md2.rom_bank  = value; write_handled = true;
+                gb->duck_md2.rom_bank  = value;
+                write_handled = true;
+            }
+
+            if ((addr == 0x1000) && gb->duck_laptop_sram_cart_present) {
+                // Cart SRAM bank: Upper nybble (0-3)
+                gb->mbc_ram_enable = true;
+                gb->duck_md2.ram_bank  = (value & 0x30) >> 4;
+                write_handled = true;
+                #ifdef DEBUG_LOG_DUCK_SYSROM_MBC_WRITES
+                    GB_log(gb, "  [ROM=%d, SRAM=%d]\n", gb->duck_md2.rom_bank, gb->duck_md2.ram_bank);
+                #endif
             }
             break;
 
@@ -1290,6 +1318,8 @@ static void write_mbc7_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
 static void write_mbc_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
 {
     GB_update_mbc_mappings(gb);
+    // Note: This means that for MD1 mappers, address 0xB000 is 
+    // not usable if any bank switching is being used
     if (gb->cartridge_type->mbc_type == DUCK_MD1) {
         if (addr == 0xB000) {
             gb->duck_md1.rom_bank  = value;
@@ -1308,6 +1338,14 @@ static void write_mbc_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
         #endif
 
         // TODO: DUCK: This is similar enough now to regular mbc sram read code that regular code could be used to handle it, esp with SRAM enable being set to on
+        gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)] = value;
+        return;
+    }
+    else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_laptop_sram_cart_present) {
+
+        #ifdef DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
+            GB_log(gb, "Duck Laptop: SRAM Write 0x%2x to   0x%4x (32kBank:0x%02X PC=0x%04X)\n", addr, value,gb->duck_md0.rom_bank, gb->pc);
+        #endif
         gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)] = value;
         return;
     }
