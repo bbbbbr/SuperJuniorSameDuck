@@ -50,7 +50,7 @@ static bool peripheral_text_input_mode = false;
 static uint8_t peripheral_modifier_state = 0;
 static bool workboy_enabled = false;
 static bool megaduck_laptop_enabled = false;
-static bool user_arg_duck_laptop_sram_cart_present = false;
+static bool user_arg_duck_sram_cart_present = false;
 static uint8_t megaduck_laptop_key_modifiers = MEGADUCK_KBD_FLAGS_NONE;
 static char user_arg_mbc_string[255] = "";
 
@@ -907,7 +907,7 @@ static void set_duck_mbc_from_filename(const char *filename) {
 // MegaDuck: This needs to happen after GB_init(), GB_reset_internal() and GB_reset() so overrides don't get wiped out
 static void check_attach_cli_peripherals(GB_gameboy_t *gb) {
 
-    if (user_arg_duck_laptop_sram_cart_present) {
+    if (user_arg_duck_sram_cart_present) {
         GB_log(gb, "* Laptop SRAM Cart enabled by cli\n");
         GB_enable_laptop_sram_cart(gb);
     }
@@ -1296,11 +1296,7 @@ int main(int argc, char **argv)
     }
 
     if (get_arg_flag("--duck-sram-cart", &argc, argv)) {
-        if (megaduck_laptop_enabled == false) {
-            fprintf(stderr, "Cannot use \"--duck-sram-cart\" when \"--duck-handheld\" is specified\n");
-            exit(1);
-        } else
-            user_arg_duck_laptop_sram_cart_present = true;
+        user_arg_duck_sram_cart_present = true;
     }
 
     const char *model_string = get_arg_option("--model", &argc, argv);

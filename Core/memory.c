@@ -414,7 +414,7 @@ static uint8_t read_mbc_ram(GB_gameboy_t *gb, uint16_t addr)
         #endif
         return gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)];
     }
-    else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_laptop_sram_cart_present) {
+    else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_sram_cart_present) {
         #ifdef DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
             GB_log(gb, "Duck Laptop: SRAM Read  0x%2x from 0x%4x (32kBank:0x%02X PC=0x%04X)\n", addr, gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)],
                                                                                                 gb->duck_md0.rom_bank, gb->pc);
@@ -1056,7 +1056,7 @@ static void write_mbc(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
         case DUCK_MD1:
             // For ROM bank register access see: See write_mbc_ram()
 
-            if ((addr == 0x1000) && gb->duck_laptop_sram_cart_present) {
+            if ((addr == 0x1000) && gb->duck_sram_cart_present) {
                 // Cart SRAM bank: Upper nybble (0-3)
                 gb->mbc_ram_enable = true;
                 gb->duck_md1.ram_bank  = (value & 0x30) >> 4;
@@ -1073,7 +1073,7 @@ static void write_mbc(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
                 write_handled = true;
             }
 
-            if ((addr == 0x1000) && gb->duck_laptop_sram_cart_present) {
+            if ((addr == 0x1000) && gb->duck_sram_cart_present) {
                 // Cart SRAM bank: Upper nybble (0-3)
                 gb->mbc_ram_enable = true;
                 gb->duck_md2.ram_bank  = (value & 0x30) >> 4;
@@ -1341,7 +1341,7 @@ static void write_mbc_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
         gb->mbc_ram[((addr & 0x1FFF) + (gb->mbc_ram_bank * 0x2000)) & (gb->mbc_ram_size - 1)] = value;
         return;
     }
-    else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_laptop_sram_cart_present) {
+    else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_sram_cart_present) {
 
         #ifdef DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
             GB_log(gb, "Duck Laptop: SRAM Write 0x%2x to   0x%4x (32kBank:0x%02X PC=0x%04X)\n", addr, value,gb->duck_md0.rom_bank, gb->pc);

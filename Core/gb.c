@@ -260,7 +260,7 @@ void GB_set_explicit_mbc(GB_gameboy_t *gb, bool on, uint8_t mbc_num)
 
 void GB_enable_laptop_sram_cart(GB_gameboy_t *gb)
 {
-    gb->duck_laptop_sram_cart_present = true;
+    gb->duck_sram_cart_present = true;
 }
 
 int GB_load_boot_rom(GB_gameboy_t *gb, const char *path)

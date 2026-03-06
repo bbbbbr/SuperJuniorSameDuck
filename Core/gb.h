@@ -976,7 +976,7 @@ struct GB_gameboy_internal_s {
         bool forced_mbc;
         uint8_t  forced_mbc_num;
         uint16_t use_megaduck_laptop_initial_sp;
-        bool duck_laptop_sram_cart_present;
+        bool duck_sram_cart_present;
                
         /* Temporary state */
         bool wx_just_changed;

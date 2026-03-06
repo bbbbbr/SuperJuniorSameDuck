@@ -41,8 +41,7 @@ Once running, press the "F12" key to turn on the SDL keyboard emulation support.
 - `--duck-printer-1pass` or `--duck-printer-2pass`: Turn on MegaDuck printer emulation for the laptop model
   - With keyboard support enabled, use `scroll lock` or `print screen` keys to emulate print screen key.
 - `--workboy`: Turn on Workboy emulation and SDL keyboard support (`F12` to toggle keyboard)
-- `--duck-sram-cart`: The add-on SRAM cart is plugged into the second cart slot on the laptop model
-  - Not compatible with `duck-handheld`
+- `--duck-sram-cart`: The add-on SRAM cart is plugged into the second cart slot on the laptop model (or a custom cart with on-board SRAM)
 - `--force-mbc <hex mbc number>`: Explicitly specify which MBC to use, do not use header or other detection. Allows using MegaDuck ROMs built for Game Boy MBCs (such as MBC5) as well as avoiding heuristics for other ROMs. 
   - `0xE0`:  MegaDuck MD 0 (Laptop Cart and System ROM MBC)
     - 32k ROM bank size, reg addr `0x1000`, range 0-15

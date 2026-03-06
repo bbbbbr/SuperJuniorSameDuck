@@ -173,13 +173,13 @@ void GB_update_mbc_mappings(GB_gameboy_t *gb)
         case DUCK_MD1:
             gb->mbc_rom0_bank =  gb->duck_md1.rom_bank * 2;
             gb->mbc_rom_bank  = (gb->duck_md1.rom_bank * 2) + 1;
-            if (gb->duck_laptop_sram_cart_present) gb->mbc_ram_bank  = gb->duck_md1.ram_bank;
+            if (gb->duck_sram_cart_present) gb->mbc_ram_bank  = gb->duck_md1.ram_bank;
             break;
 
         // MegaDuck 16K bank switching
         case DUCK_MD2:
             gb->mbc_rom_bank = gb->duck_md2.rom_bank;
-            if (gb->duck_laptop_sram_cart_present) gb->mbc_ram_bank  = gb->duck_md2.ram_bank;
+            if (gb->duck_sram_cart_present) gb->mbc_ram_bank  = gb->duck_md2.ram_bank;
             break;
 
         // MegaDuck 32K with NO bank switching
@@ -275,7 +275,7 @@ void GB_configure_cart(GB_gameboy_t *gb)
             // The System ROM seems to have 4 x 8k SRAM banks
             gb->mbc_ram_size = 0x2000 * 4;
         }
-        else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_laptop_sram_cart_present) {
+        else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_sram_cart_present) {
             // SRAM only present for these mbcs when sram cart is connected
             gb->mbc_ram_size = 0x2000 * 4;
         }
