@@ -5,15 +5,16 @@ A fork of [SameBoy](https://github.com/LIJI32/SameBoy) with various patches for 
 ![Bilder Databank ROM Cart running](/info/megaduck_databank.png)
 
 ### Features
-At present it's the only emulator with support for the MegaDuck Super Junior/Quique Laptop hardware. This support was implemented based on [disassembly of the laptop system ROM](https://github.com/bbbbbr/megaduck-quique-disasm) and other research.
+The first emulator that supported the MegaDuck Super Junior/Quique Laptop hardware. This support was implemented based on [disassembly of the laptop system ROM](https://github.com/bbbbbr/megaduck-quique-disasm) and other research.
 - Keyboard
 - RTC
 - Printers (Single and Double Pass)
 - SRAM Cart
 - Run Cart from ROM Slot
+ - one of few emulators with (seemingly) all audio registers correctly supported.
 
-And one of very few emulators with (seemingly) all audio registers correctly supported.
-
+#### Update!
+- The [MiSTer Game Boy/MegaDuck core](https://github.com/MiSTer-devel/Gameboy_MiSTer/) core now also supports the MegaDuck laptop model and has correct audio emulation.
 
 ### Detecting MBC by Filename Extension
 The emulator will attempt to identify which MBC (cart memory controller) to use based on the filename extension.
