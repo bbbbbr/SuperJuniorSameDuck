@@ -900,6 +900,8 @@ static bool registers(GB_gameboy_t *gb, char *arguments, char *modifiers, const 
     GB_log(gb, "HL  = %s\n", value_to_string(gb, gb->hl, false, false));
     GB_log(gb, "SP  = %s\n", value_to_string(gb, gb->sp, false, false));
     GB_log(gb, "PC  = %s\n", value_to_string(gb, gb->pc, false, false));
+    GB_log(gb, "IF  = %s\n", value_to_string(gb, gb->io_registers[GB_IO_IF], false, false));
+    GB_log(gb, "IE  = %s\n", value_to_string(gb, gb->interrupt_enable, false, false));
     GB_log(gb, "IME = %s\n", gb->ime? "Enabled" : "Disabled");
     return true;
 }
