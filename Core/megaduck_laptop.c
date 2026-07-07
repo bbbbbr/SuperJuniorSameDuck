@@ -56,16 +56,26 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             break;
 
         case MEGADUCK_SYS_CMD_GET_KEYS:
+            #ifdef DEBUG_LOG_DUCK_SERIAL_RX_GETKEYS_CMD
+                GB_log(gb, "\n-> [idle] GET KEYS (rx cmd = 0x%0X)\n", periph->byte_being_received);
+            #endif
+
             periph->state = MEGADUCK_SYS_STATE_GET_KEYS_TX;
             MD_keyboard_enqueue_reply(periph);
             break;
 
         case MEGADUCK_SYS_CMD_RTC_GET_DATE_AND_TIME:
+            #ifdef DEBUG_LOG_DUCK_RTC_COMMANDS
+                GB_log(gb, "* CMD: MEGADUCK_SYS_CMD_RTC_GET_DATE_AND_TIME\n");
+            #endif
             periph->state = MEGADUCK_SYS_STATE_GET_RTC_TX;
             MD_rtc_enqueue_reply(periph);
             break;
 
         case MEGADUCK_SYS_CMD_RTC_SET_DATE_AND_TIME:
+            #ifdef DEBUG_LOG_DUCK_RTC_COMMANDS
+                GB_log(gb, "* CMD: MEGADUCK_SYS_CMD_RTC_SET_DATE_AND_TIME");
+            #endif
             periph->state = MEGADUCK_SYS_STATE_CMD_SET_RTC;
             MD_receive_buf_init(periph);
             break;
