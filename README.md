@@ -15,6 +15,12 @@ The first emulator that supported the MegaDuck Super Junior/Quique Laptop hardwa
 
 #### Update!
 - The [MiSTer Game Boy/MegaDuck core](https://github.com/MiSTer-devel/Gameboy_MiSTer/) core now also supports the MegaDuck laptop model and has correct audio emulation.
+It is also one of very few emulators with (seemingly) all audio registers correctly supported.
+
+### Accuracy
+- Safe keyboard polling intervals: The emulator does not yet currently enforce the required "safe" interval between sequential keyboard polling requests. It always succeeds. In hardware polling too quickly may result in lockup of the peripheral IO controller (which connects the keyboard, rtc, etc).
+- Serial clock speeds: The emulator does not yet mimic the (significantly) faster transfer speed when the peripheral IO controller is driving the serial clock (compared to the much slower speed when the MegaDuck sm83 cpu CPU is driving the serial clock).
+
 
 ### Detecting MBC by Filename Extension
 The emulator will attempt to identify which MBC (cart memory controller) to use based on the filename extension.
