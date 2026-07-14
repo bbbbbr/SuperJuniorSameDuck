@@ -20,6 +20,9 @@ It is also one of very few emulators with (seemingly) all audio registers correc
 ### Accuracy
 - Safe keyboard polling intervals: The emulator does not yet currently enforce the required "safe" interval between sequential keyboard polling requests. It always succeeds. In hardware polling too quickly may result in lockup of the peripheral IO controller (which connects the keyboard, rtc, etc).
 - Serial clock speeds: The emulator does not yet mimic the (significantly) faster transfer speed when the peripheral IO controller is driving the serial clock (compared to the much slower speed when the MegaDuck sm83 cpu CPU is driving the serial clock).
+- RTC reset quirk: The Spanish laptop hardware System ROM monitors WRAM (across power cycles and cart slot program launches) to see whether the sequence `0xAA, 0xE4, 0x55` is preserved starting at WRAM address `0xDBFC`. The emulator does not implement preserving WRAM across power cycles and so the System ROM will always try reset the RTC when it starts up. The RTC reset behavior is not present in the German model System ROM.
+
+
 
 
 ### Detecting MBC by Filename Extension
