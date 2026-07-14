@@ -11,8 +11,6 @@
 // In SDL/gui.c
 bool cart_swap_ducklaptop(void);
 
-
-
 // Serial clock speed used is: 8192 Hz  1 KB/s  Bit 1 cleared, Normal speed
 //
 // 8192 Hz / 8 bits = 1024 Bytes per second / 1000 msec = 1.024 msec per byte
@@ -40,8 +38,16 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
 
     bool cart_loaded;
 
-    #ifdef DEBUG_LOG_DUCK_SERIAL_RX_IDLE_CMD
-        GB_log(gb, "\n-> [idle] rx cmd = 0x%0X\n", periph->byte_being_received);
+    #ifdef DEBUG_LOG_DUCK_SERIAL_RX_IDLE_CMD        
+        static uint32_t last_t_states = 0;
+        uint32_t      t_states_delta;
+        if (periph->t_states_elapsed > last_t_states) t_states_delta = periph->t_states_elapsed - last_t_states;
+        else                                     t_states_delta = periph->t_states_elapsed + (0x100000000 - last_t_states);
+
+        GB_log(gb, "-> [idle] rx cmd = 0x%02x (T States since last idle cmd= 0x%08x -> 0x%08x = %10d, %5d msec)\n", periph->byte_being_received,
+                last_t_states, periph->t_states_elapsed, t_states_delta,
+                (int)((1000.0 / 4194304.0) * t_states_delta));  // (1 second in msec / 4.19 mhz) * elapsed
+        last_t_states = periph->t_states_elapsed;
     #endif
 
     switch (periph->byte_being_received) {

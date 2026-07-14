@@ -47,6 +47,7 @@
 // #define DEBUG_LOG_DUCK_SYSROM_SRAM_ACCESS
 
 // #define DEBUG_LOG_DUCK_RTC_COMMANDS
+// #define DEBUG_LOG_DUCK_RTC_COMMANDS_DATA
 
 // #define DEBUG_LOG_DUCK_PRINTER_TIMING
 
@@ -85,6 +86,7 @@ typedef struct {
     uint8_t  bits_received;
 
     // External Clock mode states and values
+    uint32_t t_states_elapsed;
     int32_t  t_states_till_update;
     uint8_t  ext_clk_send_bit_counter;
     uint16_t ext_clk_send_buf_size;

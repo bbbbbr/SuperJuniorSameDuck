@@ -5,6 +5,22 @@
 
 #include "megaduck_laptop_periph.h"
 
+// TODO: Consider ignoring the automatic RTC reset behavior 
+//       of the Spanish System ROM when it detects the rtc valid sequence
+//       at WRAM 0xDBFC is not present.
+//
+// * Spanish System ROM
+//   Year  = 94 <- WRITE rtc TO periph
+//   Month = 01
+//   Day   = 01
+//   DoW   = 06
+//   Hour  = 00
+//   AM/PM = 00
+//   Min   = 00
+//   Sec   = 00
+
+
+
 #ifdef _WIN32
     #define timegm _mkgmtime
 #endif
@@ -44,6 +60,25 @@ void MD_rtc_set_from_buf(GB_megaduck_laptop_t * periph) {
                                               + (periph->rx_buffer[MEGADUCK_RTC_IDX_AMPM] * 12);
         tm_rtc_time.tm_min  = bcd_to_int(periph->rx_buffer[MEGADUCK_RTC_IDX_MIN]);
         tm_rtc_time.tm_sec  = bcd_to_int(periph->rx_buffer[MEGADUCK_RTC_IDX_SEC]);
+
+        #ifdef DEBUG_LOG_DUCK_RTC_COMMANDS_DATA
+            printf("* Year  = %02x <- WRITE rtc TO periph\n"
+                   "  Month = %02x\n"
+                   "  Day   = %02x\n"
+                   "  DoW   = %02x\n"
+                   "  Hour  = %02x\n"
+                   "  AM/PM = %02x\n"
+                   "  Min   = %02x\n"
+                   "  Sec   = %02x\n\n",
+                periph->rx_buffer[MEGADUCK_RTC_IDX_YEAR],
+                periph->rx_buffer[MEGADUCK_RTC_IDX_MON],
+                periph->rx_buffer[MEGADUCK_RTC_IDX_DAY],
+                periph->rx_buffer[MEGADUCK_RTC_IDX_DOW],
+                periph->rx_buffer[MEGADUCK_RTC_IDX_HOUR],
+                periph->rx_buffer[MEGADUCK_RTC_IDX_AMPM],
+                periph->rx_buffer[MEGADUCK_RTC_IDX_MIN],
+                periph->rx_buffer[MEGADUCK_RTC_IDX_SEC]);
+        #endif
 
         // Use timegm() instead mktime() to avoid having to make sure the
         // .tm_isdst (daylight savings flag) is set correctly (otherwise mktime() may add an hour)
@@ -96,6 +131,25 @@ void MD_rtc_enqueue_reply(GB_megaduck_laptop_t * periph) {
 
     MD_send_buf_calc_enqueue_checksum(periph);
     MD_send_buf_finalize_and_transmit(periph);
+
+        #ifdef DEBUG_LOG_DUCK_RTC_COMMANDS_DATA
+            printf("* Year  = %02x  <- READ rtc FROM periph\n"
+                   "  Month = %02x\n"
+                   "  Day   = %02x\n"
+                   "  DoW   = %02x\n"
+                   "  AM/PM = %02x\n"
+                   "  Hour  = %02x\n"
+                   "  Min   = %02x\n"
+                   "  Sec   = %02x\n\n",
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_YEAR + 1],
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_MON + 1],
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_DAY + 1],
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_DOW + 1],
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_AMPM + 1],
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_HOUR + 1],
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_MIN + 1],
+                periph->ext_clk_send_buf[MEGADUCK_RTC_IDX_SEC + 1]);
+        #endif
 
     // Override with longer delay for first reply byte
     // since command that initiated the buffer requires 2+ msec delay

@@ -444,6 +444,7 @@ static void megaduck_laptop_peripheral_run(GB_gameboy_t *gb, uint8_t cycles)
 {
     if (unlikely( !GB_megaduck_laptop_is_enabled(gb) )) return;
 
+    gb->megaduck_laptop.t_states_elapsed     += cycles;
     gb->megaduck_laptop.t_states_till_update -= cycles;
     if (gb->megaduck_laptop.t_states_till_update <= 0) {
         // Called after 512 T-States have elapsed

@@ -22,6 +22,7 @@ void MD_receive_buf_init(GB_megaduck_laptop_t * periph) {
     // since command that initiated the buffer requires 2+ msec delay
     // for unknown reasons (maybe extra delay for RTC latch on reads?)
     periph->t_states_till_update = MEGADUCK_LAPTOP_TICK_COUNT_RX_BUF_START;
+    periph->t_states_elapsed     = 0;
 }
 
 
