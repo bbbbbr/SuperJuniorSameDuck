@@ -203,6 +203,7 @@ enum {
     MEGADUCK_SYS_CMD_RTC_SET_DATE_AND_TIME    = 0x0B,  // Sets Hardware RTC Date and Time using multi-byte buffer send/TX
     MEGADUCK_SYS_CMD_RTC_GET_DATE_AND_TIME    = 0x0C,  // Requests a multi-byte buffer with RTC data from Peripheral
     MEGADUCK_SYS_CMD_PRINT_SEND_BYTES         = 0x11,  // Send printer data
+    MEGADUCK_SYS_CMD_SWITCH_TO_EXT_LINK_PORT  = 0x14,  // Permanently(?) switches link port from Peripheral control ASIC to link port pins on the DB15 connector (11=SCK, 12=SIN, 13=SOUT)
 };
 
 
