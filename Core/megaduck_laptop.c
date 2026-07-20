@@ -108,8 +108,9 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             break;
 
         case MEGADUCK_SYS_CMD_RUN_CART_IN_SLOT:
-            // TODO: To be closer to the actual Duck Laptop hardware the run cart command should be changed
-            //       to preserve WRAM, VRAM and maybe SRAM(?)
+            // If the cart_swap_ducklaptop succeeds, it will load a new ROM,
+            // reset the MBC, but otherwise tries to preserve system state
+            // as would be the case on the actual hardware (WRAM, VRAM, SRAM, HRAM preserved)
             cart_loaded = cart_swap_ducklaptop();
             if (cart_loaded)
                 MD_send_buf_enqueue(periph, MEGADUCK_SYS_REPLY_BOOT_OK);  // TODO: Unverified if this is the response on success
@@ -118,7 +119,6 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             // Send enqueued command reply
             periph->state = MEGADUCK_SYS_STATE_REPLY_CMD_RUN_CART_IN_SLOT;
             MD_send_buf_finalize_and_transmit(periph);
-            // }
             break;
 
         default:

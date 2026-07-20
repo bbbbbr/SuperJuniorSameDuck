@@ -340,7 +340,7 @@ bool cart_swap_ducklaptop(void)
     char *filename = do_open_rom_dialog();
     if (filename) {
         set_filename(filename, free);
-        pending_command = GB_SDL_NEW_FILE_COMMAND;
+        pending_command = GB_SDL_CART_SWAP_COMMAND_WITH_RESET_PC;
         return true;
     } else
         return false;

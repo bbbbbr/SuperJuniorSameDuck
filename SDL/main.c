@@ -760,6 +760,7 @@ static void gb_audio_callback(GB_gameboy_t *gb, GB_sample_t *sample)
 }
     
 static bool doing_hot_swap = false;
+static bool reset_pc_and_mbc_during_cart_hot_swap = false;
 static bool handle_pending_command(void)
 {
     switch (pending_command) {
@@ -811,7 +812,9 @@ static bool handle_pending_command(void)
             
         case GB_SDL_NO_COMMAND:
             return false;
-            
+         
+        case GB_SDL_CART_SWAP_COMMAND_WITH_RESET_PC:
+            reset_pc_and_mbc_during_cart_hot_swap = true;
         case GB_SDL_CART_SWAP_COMMAND:
             doing_hot_swap = true;
         case GB_SDL_RESET_COMMAND:
@@ -882,6 +885,7 @@ enum {
     MBC_DUCK_MD0      = 0xE0,
     MBC_DUCK_MD1      = 0xE1,
     MBC_DUCK_MD2      = 0xE2,
+    MBC_DUCK_MBC5     = 0x1B,
     MBC_DUCK_NONE     = 0x00, // Uses GB_NO_MBC
 };
 
@@ -894,6 +898,7 @@ static void set_duck_mbc_from_filename(const char *filename) {
     if      (matches_extension(filename, (char *)".md0"))  { mbc_num = MBC_DUCK_MD0;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md1"))  { mbc_num = MBC_DUCK_MD1;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md2"))  { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; }
+    else if (matches_extension(filename, (char *)".mbc5")) { mbc_num = MBC_DUCK_MBC5; valid_mbc = true; }
     else if (matches_extension(filename, (char *)".bin"))  { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .bin
     else if (matches_extension(filename, (char *)".duck")) { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .duck
 
@@ -997,6 +1002,12 @@ restart:
     
     if (GB_is_inited(&gb)) {
         if (doing_hot_swap) {
+            if (reset_pc_and_mbc_during_cart_hot_swap) {
+                GB_log(&gb, "Cart hotswap with PC and MBC Reset\n");
+                check_attach_cli_peripherals(&gb);  // For changing MBC to match loaded file
+                GB_reset_pc_and_mbc(&gb);
+                reset_pc_and_mbc_during_cart_hot_swap = false;
+            }
             doing_hot_swap = false;
         }
         else {

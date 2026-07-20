@@ -1862,6 +1862,13 @@ void GB_quick_reset(GB_gameboy_t *gb)
     GB_reset_internal(gb, true);
 }
 
+void GB_reset_pc_and_mbc(GB_gameboy_t *gb)
+{
+    // Reset PC to Duck entry point
+    GB_reset_mbc(gb);
+    gb->pc = 0;
+}
+
 void GB_switch_model_and_reset(GB_gameboy_t *gb, GB_model_t model)
 {
     // Force Duck model

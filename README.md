@@ -37,6 +37,7 @@ The MBC type can also be set explicitly using the `--force-mbc` option (override
     - Games: 2nd Space, Ant Soldiers, Armour Force, Beast Fighter, Black Forest Tale, Captain Knick Knack, Commin Five in One, Duck Adventures, Four in One, Magic Tower, Railway, Snake Roy, Worm Visitor, Zipball
   - `.bin` / `.duck`: MegaDuck with NO MBC bank switching controller
     - Games: Arctic Zone, Bomb Disposer, Magic Maze, Pile Wonder, Street Rider, The Brick Wall, Trap and Turn, Vex
+  - `.mbc5`: Standard Game Boy MBC5 with SRAM and Battery
 
 ### Emulated Keyboard for Laptop Model
 Once running, press the "F12" key to turn on the SDL keyboard emulation support.
