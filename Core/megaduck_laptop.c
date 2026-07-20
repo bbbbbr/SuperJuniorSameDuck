@@ -121,6 +121,15 @@ static void idle_handle_commands(GB_gameboy_t *gb, GB_megaduck_laptop_t * periph
             MD_send_buf_finalize_and_transmit(periph);
             break;
 
+        // For: MEGADUCK_SYS_CMD_SWITCH_TO_EXT_LINK_PORT
+        // Implemented, but not tested enough to enable yet
+        //
+        // case MEGADUCK_SYS_CMD_SWITCH_TO_EXT_LINK_PORT:
+        //     // This command permanently disconnects the peripheral controller until the next power cycle
+        //     GB_megaduck_laptop_is_not_enabled(gb);
+        //     GB_disconnect_megaduck_laptop(gb);
+        //     break;
+
         default:
             printf(" !! Duck Serial Periph: Unknown command received during idle+configured state: 0x%02x (may not be sio corrected, so read as >> 1)\n", periph->byte_being_received);
             break;
@@ -267,6 +276,26 @@ void GB_megaduck_laptop_use_alt_initial_stack_value(GB_gameboy_t *gb) {
 bool GB_megaduck_laptop_is_enabled(GB_gameboy_t *gb) {
     return gb->accessory == GB_ACCESSORY_MEGADUCK_LAPTOP; // TODO:  && gb->megaduck_laptop.mode;
 }
+
+// For: MEGADUCK_SYS_CMD_SWITCH_TO_EXT_LINK_PORT
+// Implemented, but not tested enough to enable yet
+//
+// void GB_disconnect_megaduck_laptop(GB_gameboy_t *gb)
+// {
+//     memset(&gb->megaduck_laptop, 0, sizeof(gb->megaduck_laptop));
+//     GB_set_serial_transfer_bit_start_callback(gb, NULL);
+//     GB_set_serial_transfer_bit_end_callback(gb, NULL);
+//     gb->accessory = GB_ACCESSORY_NONE;
+//
+//     MD_periph_reset(&gb->megaduck_laptop, MEGADUCK_SYS_POWER_ON_RESET);
+// }
+
+// For: MEGADUCK_SYS_CMD_SWITCH_TO_EXT_LINK_PORT
+// Implemented, but not tested enough to enable yet
+//
+// bool GB_megaduck_laptop_is_not_enabled(GB_gameboy_t *gb) {
+//     return gb->accessory == GB_ACCESSORY_NONE; // TODO:  && gb->megaduck_laptop.mode;
+// }
 
 
 void GB_megaduck_laptop_key_set(GB_gameboy_t *gb, uint8_t key, uint8_t key_modifiers) {

@@ -521,8 +521,10 @@ enum {
 void GB_connect_megaduck_laptop(GB_gameboy_t *gb,
                         GB_megaduck_laptop_set_time_callback set_time_callback,
                         GB_megaduck_laptop_get_time_callback get_time_callback);
+void GB_disconnect_megaduck_laptop(GB_gameboy_t *gb);
 void GB_megaduck_laptop_use_alt_initial_stack_value(GB_gameboy_t *gb);
 bool GB_megaduck_laptop_is_enabled(GB_gameboy_t *gb);
+bool GB_megaduck_laptop_is_not_enabled(GB_gameboy_t *gb);
 
 void GB_megaduck_laptop_key_set(GB_gameboy_t *gb, uint8_t key, uint8_t key_modifiers);
 void GB_megaduck_laptop_key_release(GB_gameboy_t *gb, uint8_t key, uint8_t key_modifiers);
