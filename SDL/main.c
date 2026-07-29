@@ -19,6 +19,7 @@
 #include "Core/workboy.h"
 
 #include "SDL/megaduck_printer_preview.h"
+#include "SDL/vram_viewer_window.h"
 #include "SDL/megaduck_laptop_glue.h"
 #include "Core/megaduck_laptop.h"
 #include "Core/megaduck_laptop_periph.h"
@@ -331,13 +332,20 @@ static void handle_events(GB_gameboy_t *gb)
                     ) {
                     update_swap_interval();
                 }
+
                 if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
                     // Handle closing the printer preview window
                     if (event.window.windowID == SDL_GetWindowID(MD_printer_preview_get_window())) {
                         MD_printer_preview_cleanup();
                         // Make sure context is restored to main window
                         restore_main_window_context();
-                    } else {
+                    }
+                    else if (event.window.windowID == SDL_GetWindowID(vram_viewer_window_get_window())) {
+                        vram_viewer_window_cleanup();
+                        // Make sure context is restored to main window
+                        restore_main_window_context();
+                    }
+                    else {
                         // If it's the main window then also close the printer window
                         MD_printer_preview_cleanup();
                         // Then queue exit from main window since this seems to
@@ -351,6 +359,12 @@ static void handle_events(GB_gameboy_t *gb)
                 // Handle click-to-save in the printer preview window
                 if (event.window.windowID == SDL_GetWindowID(MD_printer_preview_get_window())) {
                     MD_printer_save_image_to_png();
+                    // Make sure context is restored to main window
+                    restore_main_window_context();
+                }
+                // Handle click-to-refresh in the printer preview window
+                else if (event.window.windowID == SDL_GetWindowID(vram_viewer_window_get_window())) {
+                    vram_viewer_window_refresh();
                     // Make sure context is restored to main window
                     restore_main_window_context();
                 }
@@ -519,7 +533,10 @@ static void handle_events(GB_gameboy_t *gb)
                 if (event.key.keysym.scancode == SDL_SCANCODE_F12) {
                     peripheral_text_input_mode = !peripheral_text_input_mode;
                     if (peripheral_text_input_mode) {
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Info", "Workboy/Duck Laptop Input Mode: enabled. F12 to Exit.\nTab = Help Key, Piano = Ctrl + (F1 - F10 and Top Row: \"`\" - Backspace)", window);
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Info",
+                            "Workboy/Duck Laptop Input Mode: enabled. F12 to Exit.\n"
+                            "Tab = Help Key, Piano = Ctrl + (F1 - F10 and Top Row: \"`\" - Backspace)\n"
+                            "Scroll Lock = Print Screen Key", window);
                         SDL_StartTextInput(); // Start SDL text input mode to capture translated characters (to avoid having to deal with different keyboard layouts to generate chars that require Shift modifiers)
                     } else {
                         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Info", "Workboy/Duck Laptop Input Mode: disabled", window);
@@ -1341,6 +1358,7 @@ int main(int argc, char **argv)
     // This function will not be called if the process is terminated in any way, anyhow.
     atexit(SDL_Quit);
     atexit(MD_printer_preview_cleanup);
+    atexit(vram_viewer_window_cleanup);
 
     if ((console_supported = CON_start(completer))) {
         CON_set_repeat_empty(true);

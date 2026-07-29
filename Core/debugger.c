@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "gb.h"
+#include "vram_viewer.h"
 
 typedef struct {
     bool has_bank;
@@ -761,6 +762,14 @@ static bool cont(GB_gameboy_t *gb, char *arguments, char *modifiers, const debug
 
     gb->debug_stopped = false;
     return false;
+}
+
+static bool vram_viewer(GB_gameboy_t *gb, char *arguments, char *modifiers, const debugger_command_t *command)
+{
+    NO_MODIFIERS
+
+    vram_viewer_refresh(gb);
+    return true;
 }
 
 static bool interrupt(GB_gameboy_t *gb, char *arguments, char *modifiers, const debugger_command_t *command)
@@ -2198,6 +2207,7 @@ static const debugger_command_t commands[] = {
     {"palettes", 3, palettes, "Display the current CGB palettes"},
     {"dma", 3, dma, "Display the current OAM DMA status"},
 
+    {"vram", 1, vram_viewer, "Open/refresh the VRAM Viewer window"},
     {"help", 1, help, "List available commands or show help for the specified command", "[<command>]"},
     {NULL,}, /* Null terminator */
 };
