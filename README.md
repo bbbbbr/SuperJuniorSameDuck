@@ -23,8 +23,6 @@ It is also one of very few emulators with (seemingly) all audio registers correc
 - RTC reset quirk: The Spanish laptop hardware System ROM monitors WRAM (across power cycles and cart slot program launches) to see whether the sequence `0xAA, 0xE4, 0x55` is preserved starting at WRAM address `0xDBFC`. The emulator does not implement preserving WRAM across power cycles and so the System ROM will always try reset the RTC when it starts up. The RTC reset behavior is not present in the German model System ROM.
 
 
-
-
 ### Detecting MBC by Filename Extension
 The emulator will attempt to identify which MBC (cart memory controller) to use based on the filename extension.
 The MBC type can also be set explicitly using the `--force-mbc` option (overrides file extension).
@@ -46,6 +44,9 @@ Once running, press the "F12" key to turn on the SDL keyboard emulation support.
   - `CTRL + F1-F10`: Sharp piano keys, (``CTRL + `,1-10,-,=,Backspace``): Primary piano keys
   - `Tab`: Help key
   - `Scroll Lock`: Printscreen key
+
+### Added debugger commands:
+- `vram`: Opens a VRAM tile viewer window
 
 ### Added command line options:
 - `--duck-handheld`: Handheld support only. **Turn OFF MegaDuck Super Junior/Quique Laptop emulation** and SDL keyboard support (`F12` to toggle keyboard)
