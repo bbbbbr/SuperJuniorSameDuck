@@ -1515,6 +1515,7 @@ static bool examine(GB_gameboy_t *gb, char *arguments, char *modifiers, const de
 
     bool error;
     value_t addr = debugger_evaluate(gb, arguments, (unsigned)strlen(arguments), &error, NULL, NULL);
+    value_t addr_cache = addr;
     uint16_t count = 32;
 
     if (modifiers) {
@@ -1554,6 +1555,25 @@ static bool examine(GB_gameboy_t *gb, char *arguments, char *modifiers, const de
                 addr.value += 16;
                 GB_log(gb, "\n");
             }
+                uint16_t count = 32;
+                bool wipe_touched = false;
+                if (addr_cache.value == 0xC000) {
+                    count = (0xDFFF + 1) - (0xC000);
+                    wipe_touched = true;
+                }
+                if ((addr_cache.value >= 0xC000) && (addr_cache.value <= ((0xDFFF + 1) - count))) {
+                    GB_log(gb, "Mem Touched (0 = untouched) %x for %d\n", addr_cache.value, count);
+                    while (count) {
+                        GB_log(gb, "%04x: ", addr_cache.value);
+                        for (unsigned i = 0; i < 16 && count; i++) {
+                            GB_log(gb, "%02x ", gb->ram_touched[addr_cache.value & 0x1FFF]);
+                            count--;
+                        }
+                        addr_cache.value += 16;
+                        GB_log(gb, "\n");
+                    }
+                }
+                if (wipe_touched) memset(gb->ram_touched, 0x00, gb->ram_size);
         }
     }
     return true;

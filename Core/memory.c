@@ -1423,11 +1423,13 @@ static void write_mbc_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
 static void write_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
 {
     gb->ram[addr & 0x0FFF] = value;
+    gb->ram_touched[addr & 0x0FFF] = 0xFF;
 }
 
 static void write_banked_ram(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
 {
     gb->ram[(addr & 0x0FFF) + gb->cgb_ram_bank * 0x1000] = value;
+    gb->ram_touched[(addr & 0x0FFF) + 1 * 0x1000] = 0xFF;
 }
 
 static void write_oam(GB_gameboy_t *gb, uint8_t addr, uint8_t value)

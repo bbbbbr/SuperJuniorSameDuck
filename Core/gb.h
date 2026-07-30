@@ -819,6 +819,7 @@ struct GB_gameboy_internal_s {
                
         /* Various RAMs */
         uint8_t *ram;
+        uint8_t *ram_touched;
         uint8_t *vram;
         uint8_t *mbc_ram;
 

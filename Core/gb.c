@@ -169,6 +169,8 @@ GB_gameboy_t *GB_init(GB_gameboy_t *gb, GB_model_t model)
     }
     else {
         gb->ram = malloc(gb->ram_size = 0x2000);
+        gb->ram_touched = malloc(gb->ram_size = 0x2000);
+        memset(gb->ram_touched, 0x00, gb->ram_size);
         gb->vram = malloc(gb->vram_size = 0x2000);
     }
 
@@ -1882,6 +1884,8 @@ void GB_switch_model_and_reset(GB_gameboy_t *gb, GB_model_t model)
     }
     else {
         gb->ram = realloc(gb->ram, gb->ram_size = 0x2000);
+        gb->ram_touched = realloc(gb->ram_touched, gb->ram_size = 0x2000);
+        memset(gb->ram_touched, 0x00, gb->ram_size);
         gb->vram = realloc(gb->vram, gb->vram_size = 0x2000);
     }
 #ifndef GB_DISABLE_DEBUGGER
