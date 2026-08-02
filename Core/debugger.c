@@ -48,6 +48,7 @@ struct GB_breakpoint_s {
 
 #define WATCHPOINT_READ (1)
 #define WATCHPOINT_WRITE (2)
+#define WATCHPOINT_LOGONLY_NOBREAK (4)
 
 struct GB_watchpoint_s {
     unsigned id;
@@ -1207,6 +1208,9 @@ static bool watch(GB_gameboy_t *gb, char *arguments, char *modifiers, const debu
             case 'w':
                 flags |= WATCHPOINT_WRITE;
                 break;
+            case 'l':
+                flags |= WATCHPOINT_LOGONLY_NOBREAK;
+                break;
             default:
                 print_usage(gb, command);
                 return true;
@@ -1390,19 +1394,21 @@ static bool list(GB_gameboy_t *gb, char *arguments, char *modifiers, const debug
                 end_string = strdup(debugger_value_to_string(gb, end, addr.has_bank, true));
             }
             if (gb->watchpoints[i].condition) {
-                GB_log(gb, " %d. %s%s%s%s (%c%c, Condition: %s)\n", gb->watchpoints[i].id, debugger_value_to_string(gb, addr, addr.has_bank, false),
+                GB_log(gb, " %d. %s%s%s%s (%c%c%c, Condition: %s)\n", gb->watchpoints[i].id, debugger_value_to_string(gb, addr, addr.has_bank, false),
                                                                   end_string? " - " : "", end_string ?: "",
                                                                   gb->watchpoints[i].inclusive? " (inclusive)" : "",
                                                                   (gb->watchpoints[i].flags & WATCHPOINT_READ)? 'r' : '-',
                                                                   (gb->watchpoints[i].flags & WATCHPOINT_WRITE)? 'w' : '-',
+                                                                  (gb->watchpoints[i].flags & WATCHPOINT_LOGONLY_NOBREAK)? 'l' : '-',
                                                                   gb->watchpoints[i].condition);
             }
             else {
-                GB_log(gb, " %d. %s%s%s%s (%c%c)\n", gb->watchpoints[i].id, debugger_value_to_string(gb, addr, addr.has_bank, false),
+                GB_log(gb, " %d. %s%s%s%s (%c%c%c)\n", gb->watchpoints[i].id, debugger_value_to_string(gb, addr, addr.has_bank, false),
                                                    end_string? " - " : "", end_string ?: "",
                                                    gb->watchpoints[i].inclusive? " (inclusive)" : "",
                                                    (gb->watchpoints[i].flags & WATCHPOINT_READ)? 'r' : '-',
-                                                   (gb->watchpoints[i].flags & WATCHPOINT_WRITE)? 'w' : '-');
+                                                   (gb->watchpoints[i].flags & WATCHPOINT_WRITE)? 'w' : '-',
+                                                   (gb->watchpoints[i].flags & WATCHPOINT_LOGONLY_NOBREAK)? 'l' : '-');
             }
         }
     }
@@ -2187,7 +2193,7 @@ static const debugger_command_t commands[] = {
     {"watch", 1, watch, "Add a new watchpoint at the specified address/expression or range. "
                         "Ranges are exclusive by default, unless \"inclusive\" is used. "
                         "The default watchpoint type is write-only.",
-                        "<expression> [to <end expression> [inclusive]] [if <condition expression>]", "(r|w|rw)",
+                        "<expression> [to <end expression> [inclusive]] [if <condition expression>]", "(r|w|l|rw)",
                         .argument_completer = symbol_completer, .modifiers_completer = rw_completer
     },
     {"unwatch", 3, unwatch, "Delete a watchpoint by its identifier, or all watchpoints", "[<watchpoint id>]"},
@@ -2341,7 +2347,7 @@ static void test_watchpoint(GB_gameboy_t *gb, uint16_t addr, uint8_t flags, uint
         if (addr > (uint32_t)watchpoint->addr + watchpoint->length + watchpoint->inclusive) continue;
         if (!watchpoint->condition) {
         condition_ok:
-            GB_debugger_break(gb);
+            if (!(watchpoint->flags & WATCHPOINT_LOGONLY_NOBREAK)) GB_debugger_break(gb);
             if (flags == WATCHPOINT_READ) {
                 GB_log(gb, "Watchpoint %u: [%s]\n", watchpoint->id, value_to_string(gb, addr, true, false));
             }
