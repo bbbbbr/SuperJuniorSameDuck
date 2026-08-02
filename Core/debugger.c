@@ -1891,6 +1891,9 @@ static bool apu(GB_gameboy_t *gb, char *arguments, char *modifiers, const debugg
         }
         else {
             GB_log(gb, "Enabled\n");
+            GB_log(gb, "NR50=%02X, NR51=%02X, NR52=%02X\n", gb->io_registers[GB_IO_NR50],
+                               gb->io_registers[GB_IO_NR51],
+                               gb->io_registers[GB_IO_NR52]);
             for (uint8_t channel = 0; channel < GB_N_CHANNELS; channel++) {
                 GB_log(gb, "CH%u is %s, DAC %s; current sample = 0x%x\n", channel + 1,
                     gb->apu.is_active[channel] ? "active  " : "inactive",
