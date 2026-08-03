@@ -109,6 +109,7 @@ char *do_open_rom_dialog(void)
     gtk_file_filter_add_pattern(filter, "*.md0");
     gtk_file_filter_add_pattern(filter, "*.md1");
     gtk_file_filter_add_pattern(filter, "*.md2");
+    gtk_file_filter_add_pattern(filter, "*.md2s");
     gtk_file_filter_add_pattern(filter, "*.bin");
     gtk_file_filter_set_name(filter, "Mega Duck ROMs");
     gtk_file_chooser_add_filter(dialog, filter);

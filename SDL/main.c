@@ -57,7 +57,7 @@ static char user_arg_mbc_string[255] = "";
 
 
 static bool matches_extension(const char * filename, const char * extension);
-static void set_duck_mbc_from_filename(const char *filename);
+static void set_duck_mbc_from_filename(GB_gameboy_t *gb, const char *filename);
 static void check_attach_cli_peripherals(GB_gameboy_t *gb);
 
 // For temporary transfer of context to the printer window
@@ -907,7 +907,7 @@ enum {
 };
 
 // Don't call this if the user forced and MBC with the CLI arg: if (strlen(user_arg_mbc_string) > 0)
-static void set_duck_mbc_from_filename(const char *filename) {
+static void set_duck_mbc_from_filename(GB_gameboy_t *gb, const char *filename) {
 
     bool    valid_mbc = false;
     uint8_t mbc_num = MBC_DUCK_NONE;
@@ -915,13 +915,18 @@ static void set_duck_mbc_from_filename(const char *filename) {
     if      (matches_extension(filename, (char *)".md0"))  { mbc_num = MBC_DUCK_MD0;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md1"))  { mbc_num = MBC_DUCK_MD1;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md2"))  { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; }
+    else if (matches_extension(filename, (char *)".md2s")) { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; user_arg_duck_sram_cart_present = true; }
     else if (matches_extension(filename, (char *)".mbc5")) { mbc_num = MBC_DUCK_MBC5; valid_mbc = true; }
     else if (matches_extension(filename, (char *)".bin"))  { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .bin
     else if (matches_extension(filename, (char *)".duck")) { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .duck
 
     if (valid_mbc) {
-        GB_log(&gb, "* MBC detected from file extension: MBC = 0x%02X\n", mbc_num);
-        GB_set_explicit_mbc(&gb, true, mbc_num);
+        if (user_arg_duck_sram_cart_present) {
+            GB_log(gb, "* Cart SRAM enabled by file extension\n");
+            GB_enable_laptop_sram_cart(gb);
+        }
+        GB_log(gb, "* MBC detected from file extension: MBC = 0x%02X\n", mbc_num);
+        GB_set_explicit_mbc(gb, true, mbc_num);
     }
 }
 
@@ -930,7 +935,7 @@ static void set_duck_mbc_from_filename(const char *filename) {
 static void check_attach_cli_peripherals(GB_gameboy_t *gb) {
 
     if (user_arg_duck_sram_cart_present) {
-        GB_log(gb, "* Laptop SRAM Cart enabled by cli\n");
+        GB_log(gb, "* Cart SRAM enabled by cli\n");
         GB_enable_laptop_sram_cart(gb);
     }
 
@@ -938,7 +943,7 @@ static void check_attach_cli_peripherals(GB_gameboy_t *gb) {
         GB_log(gb, "* MBC forced from CLI arg: MBC = 0x%02X\n", (uint8_t)strtol(user_arg_mbc_string, NULL, 16));
         GB_set_explicit_mbc(gb, true, (uint8_t)strtol(user_arg_mbc_string, NULL, 16));
     } else {
-        set_duck_mbc_from_filename(filename);
+        set_duck_mbc_from_filename(gb, filename);
     }
 
     if (workboy_enabled) {

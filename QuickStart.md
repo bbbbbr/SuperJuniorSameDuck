@@ -33,5 +33,7 @@ The MBC type can also be set explicitly using the `--force-mbc` option (override
     - Games: Puppet Knight, Suleiman’s Treasure
   - `.md2`: MegaDuck MD 2
     - Games: 2nd Space, Ant Soldiers, Armour Force, Beast Fighter, Black Forest Tale, Captain Knick Knack, Commin Five in One, Duck Adventures, Four in One, Magic Tower, Railway, Snake Roy, Worm Visitor, Zipball
+  - `.md2s`: MegaDuck MD 2 + Cart SRAM
+    - Games: Pokemon Red (rom patch), QR-Paint
   - `.bin` / `.duck`: MegaDuck with NO MBC bank switching controller
     - Games: Arctic Zone, Bomb Disposer, Magic Maze, Pile Wonder, Street Rider, The Brick Wall, Trap and Turn, Vex

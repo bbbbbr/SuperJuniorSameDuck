@@ -28,7 +28,7 @@ char *do_open_rom_dialog(void)
     dialog.lpstrFile = filename;
     dialog.nMaxFile = MAX_PATH;
     // dialog.lpstrFilter = L"Game Boy ROMs\0*.gb;*.gbc;*.sgb;*.isx\0All files\0*.*\0\0";
-    dialog.lpstrFilter = L"Mega Duck ROMs\0*.duck;*.md0;*.md1;*.md2;*.bin;\0All files\0*.*\0\0";
+    dialog.lpstrFilter = L"Mega Duck ROMs\0*.duck;*.md0;*.md1;*.md2;*.md2s;*.bin;\0All files\0*.*\0\0";
     dialog.nFilterIndex = 1;
     dialog.lpstrFileTitle = NULL;
     dialog.nMaxFileTitle = 0;
