@@ -910,18 +910,19 @@ enum {
 static void set_duck_mbc_from_filename(GB_gameboy_t *gb, const char *filename) {
 
     bool    valid_mbc = false;
-    uint8_t mbc_num = MBC_DUCK_NONE;
+    bool    enable_cart_sram = false;
+    uint8_t mbc_num = MBC_DUCK_NONE;    
 
     if      (matches_extension(filename, (char *)".md0"))  { mbc_num = MBC_DUCK_MD0;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md1"))  { mbc_num = MBC_DUCK_MD1;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md2"))  { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; }
-    else if (matches_extension(filename, (char *)".md2s")) { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; user_arg_duck_sram_cart_present = true; }
+    else if (matches_extension(filename, (char *)".md2s")) { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; enable_cart_sram = true; }
     else if (matches_extension(filename, (char *)".mbc5")) { mbc_num = MBC_DUCK_MBC5; valid_mbc = true; }
     else if (matches_extension(filename, (char *)".bin"))  { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .bin
     else if (matches_extension(filename, (char *)".duck")) { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .duck
 
     if (valid_mbc) {
-        if (user_arg_duck_sram_cart_present) {
+        if (enable_cart_sram) {
             GB_log(gb, "* Cart SRAM enabled by file extension\n");
             GB_enable_laptop_sram_cart(gb);
         }
