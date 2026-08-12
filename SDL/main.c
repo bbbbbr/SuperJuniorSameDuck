@@ -902,6 +902,8 @@ enum {
     MBC_DUCK_MD0      = 0xE0,
     MBC_DUCK_MD1      = 0xE1,
     MBC_DUCK_MD2      = 0xE2,
+    MBC_DUCK_MD20S    = 0xE3,
+    MBC_DUCK_MD25S    = 0xE4,
     MBC_DUCK_MBC5     = 0x1B,
     MBC_DUCK_NONE     = 0x00, // Uses GB_NO_MBC
 };
@@ -916,7 +918,8 @@ static void set_duck_mbc_from_filename(GB_gameboy_t *gb, const char *filename) {
     if      (matches_extension(filename, (char *)".md0"))  { mbc_num = MBC_DUCK_MD0;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md1"))  { mbc_num = MBC_DUCK_MD1;  valid_mbc = true; }
     else if (matches_extension(filename, (char *)".md2"))  { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; }
-    else if (matches_extension(filename, (char *)".md2s")) { mbc_num = MBC_DUCK_MD2;  valid_mbc = true; enable_cart_sram = true; }
+    else if (matches_extension(filename, (char *)".md20s")) { mbc_num = MBC_DUCK_MD20S; valid_mbc = true;}
+    else if (matches_extension(filename, (char *)".md25s")) { mbc_num = MBC_DUCK_MD25S; valid_mbc = true;}
     else if (matches_extension(filename, (char *)".mbc5")) { mbc_num = MBC_DUCK_MBC5; valid_mbc = true; }
     else if (matches_extension(filename, (char *)".bin"))  { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .bin
     else if (matches_extension(filename, (char *)".duck")) { mbc_num = MBC_DUCK_NONE; valid_mbc = true; }  // Default to 32K no MBC for .duck

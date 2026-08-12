@@ -41,6 +41,8 @@ const GB_cartridge_t GB_cart_defs[256] = {
     {  DUCK_MD0 , true,  true,  false, false},   // E0h  MegaDuck MD 0 Laptop Carts and System ROM MBC (32k ROM bank size, reg addr 0x1000, range 0-15. 4 x 8k SRAM banks, shared bank reg with ROM banks)
     {  DUCK_MD1 , true,  true,  false, false},   // E1h  MegaDuck MD 1 (32K banks, reg addr 0xB000, range 0-1) SRAM only when on laptop with sram cart
     {  DUCK_MD2 , true,  true,  false, false},   // E2h  MegaDuck MD 2 (16k banks, reg addr 0x0001, range 1-3 or 1-7) SRAM only when on laptop with sram cart
+    {  DUCK_MD20S, true,  true,  false, false},  // E3h  MegaDuck MD 2 (16k banks, reg addr 0x0001, range 1-3 or 1-7) + MD0 style laptop SRAM
+    {  DUCK_MD25S, true,  true,  false, false},  // E4h  MegaDuck MD 2 (16k banks, reg addr 0x0001, range 1-3 or 1-7) + MBC5 style SRAM
     [0xFC] =
     {  GB_CAMERA, true , true , false, false}, // FCh  POCKET CAMERA
     {  GB_NO_MBC, false, false, false, false}, // FDh  BANDAI TAMA5 (Todo: Not supported)
@@ -182,6 +184,13 @@ void GB_update_mbc_mappings(GB_gameboy_t *gb)
             if (gb->duck_sram_cart_present) gb->mbc_ram_bank  = gb->duck_md2.ram_bank;
             break;
 
+        // MegaDuck 16K bank switching + various cart SRAM
+        case DUCK_MD20S:
+        case DUCK_MD25S:
+            gb->mbc_rom_bank = gb->duck_md2.rom_bank;
+            gb->mbc_ram_bank  = gb->duck_md2.ram_bank;
+            break;
+
         // MegaDuck 32K with NO bank switching
         // Uses: GB_NO_MBC
 
@@ -249,7 +258,8 @@ void GB_configure_cart(GB_gameboy_t *gb)
         gb->cartridge_type->mbc_type != GB_TPP1 &&
         gb->cartridge_type->mbc_type != DUCK_MD1 &&
         gb->cartridge_type->mbc_type != DUCK_MD2 &&
-        // Megaduck laptop system ROM has plug in SRAM cart, treat is as plugged in // gb->cartridge_type->mbc_type != DUCK_MD0 &&
+        // Megaduck laptop system ROM has plug in SRAM cart, treat it as plugged in // gb->cartridge_type->mbc_type != DUCK_MD0 &&
+        // MD20S and MD25S treat it as plugged in
 
         gb->rom[0x149]) {
         GB_log(gb, "ROM header reports no RAM, but also reports a non-zero RAM size. Assuming cartridge has RAM.\n");
@@ -278,6 +288,14 @@ void GB_configure_cart(GB_gameboy_t *gb)
         else if (((gb->cartridge_type->mbc_type == DUCK_MD1) || (gb->cartridge_type->mbc_type == DUCK_MD2)) && gb->duck_sram_cart_present) {
             // SRAM only present for these mbcs when sram cart is connected
             gb->mbc_ram_size = 0x2000 * 4;
+        }
+        else if (gb->cartridge_type->mbc_type == DUCK_MD20S) {
+            // MD2 ROM + MD0 style SRAM with 4 x 8k banks  // TODO: Should this be maxed out to 16 too?
+            gb->mbc_ram_size = 0x2000 * 4;
+        }
+        else if (gb->cartridge_type->mbc_type == DUCK_MD25S) {
+            // Max out MD2 ROM + MBC5 SRAM with 16 x 8k banks
+            gb->mbc_ram_size = 0x2000 * 16;
         }
         else {
             static const unsigned ram_sizes[256] = {0, 0x800, 0x2000, 0x8000, 0x20000, 0x10000};

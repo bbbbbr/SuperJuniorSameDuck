@@ -275,9 +275,12 @@ static size_t bess_size_for_cartridge(const GB_cartridge_t *cart)
         case DUCK_MD0:
             return sizeof(BESS_block_t) + 1 * sizeof(BESS_MBC_pair_t);
         case DUCK_MD1:
-            return sizeof(BESS_block_t) + 1 * sizeof(BESS_MBC_pair_t);
+            return sizeof(BESS_block_t) + 2 * sizeof(BESS_MBC_pair_t);
         case DUCK_MD2:
-            return sizeof(BESS_block_t) + 1 * sizeof(BESS_MBC_pair_t);
+        case DUCK_MD20S:
+            return sizeof(BESS_block_t) + 2 * sizeof(BESS_MBC_pair_t);
+        case DUCK_MD25S:
+            return sizeof(BESS_block_t) + 3 * sizeof(BESS_MBC_pair_t);
     }
 }
 
@@ -546,9 +549,16 @@ static int save_bess_mbc_block(GB_gameboy_t *gb, virtual_file_t *file)
             mbc_block.size = 2 * sizeof(pairs[0]);
             break;
         case DUCK_MD2:
+        case DUCK_MD20S:
             pairs[1] = (BESS_MBC_pair_t){LE16(0x0001), gb->duck_md2.rom_bank};
             pairs[2] = (BESS_MBC_pair_t){LE16(0x1000), gb->duck_md2.ram_bank};
             mbc_block.size = 2 * sizeof(pairs[0]);
+            break;
+        case DUCK_MD25S:
+            pairs[1] = (BESS_MBC_pair_t){LE16(0x0001), gb->duck_md2.rom_bank};
+            pairs[2] = (BESS_MBC_pair_t){LE16(0x0000), gb->mbc_ram_enable};
+            pairs[2] = (BESS_MBC_pair_t){LE16(0x4000), gb->duck_md2.ram_bank};
+            mbc_block.size = 3 * sizeof(pairs[0]);
             break;
     }
     

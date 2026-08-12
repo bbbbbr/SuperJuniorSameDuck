@@ -1639,6 +1639,8 @@ static bool mbc(GB_gameboy_t *gb, char *arguments, char *modifiers, const debugg
                 [DUCK_MD0] = "DUCK_MD0",
                 [DUCK_MD1] = "DUCK_MD1",
                 [DUCK_MD2] = "DUCK_MD2",
+                [DUCK_MD20S] = "DUCK_MD20S",
+                [DUCK_MD25S] = "DUCK_MD25S",
 
             };
             GB_log(gb, "%s\n", mapper_names[cartridge->mbc_type]);

@@ -19,6 +19,8 @@ typedef struct {
         DUCK_MD0,
         DUCK_MD1,
         DUCK_MD2,
+        DUCK_MD20S,
+        DUCK_MD25S,
         // MegaDuck with No MBC: Uses GB_NO_MBC
     } mbc_type;
     bool has_ram;

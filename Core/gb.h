@@ -655,7 +655,7 @@ struct GB_gameboy_internal_s {
             struct {
                 uint8_t rom_bank;
                 uint8_t ram_bank;  // Only available on laptop model if SRAM cart is plugged in
-            } duck_md2;  // MBC 0xE2
+            } duck_md2;  // MBC 0xE2, MBC20S: 0xE3 (+ MD0 style SRAM), MBC25S: 0xE4 (+ MBC5 style SRAM)
 
         };
         uint8_t rumble_strength;
